@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<project name="birdy" default="compile" basedir=".">
+
+	<property name="src" value="src" />
+	<property name="build" value="war/WEB-INF/classes" />
+	<property name="lib" value="war/WEB-INF/lib" />
+
+	<target name="compile">
+		<javac debug="on" srcdir="${src}" destdir="${build}">
+			<classpath>
+				<fileset dir="${lib}">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+		<java classname="com.google.gwt.dev.Compiler" fork="true">
+			<jvmarg value="-Xmx256M" />
+
+			<classpath>
+				<pathelement path="${src}"/>
+				<fileset dir="${lib}">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+			<arg value="pt.ist.utl.birdy.Birdy" />
+		</java>
+	</target>
+	
+</project>
