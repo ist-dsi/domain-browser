@@ -22,7 +22,7 @@ import org.vaadin.console.Console.Handler;
 
 import pt.ist.fenixframework.FenixFrameworkInitializer;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
-import vaadin.annotation.EmbeddedComponent;
+import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 
 import com.surftheedge.tesseract.JSConsole;
 import com.surftheedge.tesseract.config.Config;
