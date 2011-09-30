@@ -14,6 +14,7 @@ import java.util.Set;
 
 import modules.tesseract.TesseractRuntime;
 
+import org.mozilla.javascript.Context;
 import org.vaadin.console.Console;
 import org.vaadin.console.Console.Command;
 import org.vaadin.console.Console.Handler;
@@ -23,6 +24,8 @@ import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 import sun.misc.BASE64Decoder;
 
+import com.surftheedge.tesseract.JSConsole;
+import com.surftheedge.tesseract.config.Config;
 import com.vaadin.ui.CustomComponent;
 
 @EmbeddedComponent(path = { "tesseract" })
