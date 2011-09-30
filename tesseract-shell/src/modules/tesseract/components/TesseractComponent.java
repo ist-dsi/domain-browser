@@ -3,73 +3,69 @@ package modules.tesseract.components;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import modules.tesseract.TesseractRuntime;
-import myorg.domain.MyOrg;
 
-import org.mozilla.javascript.Context;
 import org.vaadin.console.Console;
 import org.vaadin.console.Console.Command;
 import org.vaadin.console.Console.Handler;
 
 import pt.ist.fenixframework.FenixFrameworkInitializer;
-import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
-
-import com.surftheedge.tesseract.JSConsole;
-import com.surftheedge.tesseract.config.Config;
-import com.vaadin.ui.CustomComponent;
+import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 import sun.misc.BASE64Decoder;
+
+import com.vaadin.ui.CustomComponent;
 
 @EmbeddedComponent(path = { "tesseract" })
 public class TesseractComponent extends CustomComponent implements EmbeddedComponentContainer {
-
 
     public class EmbebedTesseract extends JSConsole {
 	private Console console;
 	private PrintStream stream;
 
-	public String decode(String string) throws IOException{
+	public String decode(String string) throws IOException {
 	    BASE64Decoder decoder = new BASE64Decoder();
 	    byte[] decodedBytes = decoder.decodeBuffer(string);
 	    return new String(decodedBytes);
 	}
-	
+
 	public EmbebedTesseract(Console console) throws IOException {
 	    super(new ArrayList<String>(), null, new String[] {});
 	    Config.set("disableTransactions", true, getContext(), getScope());
 	    this.console = console;
-	    
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.stringsFix))),"stringsFix");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.linq))),"linq");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.range))),"range");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.writeMode))),"writeMode");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.table))),"table");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFix))),"fenixFix");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.prompt))),"prompt");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.arrayFixs))),"arrayFixs");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.autoComplete))),"autoComplete");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFramework))),"fenixFramework");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.color))),"color");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.time))),"time");
+
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.stringsFix))), "stringsFix");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.linq))), "linq");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.range))), "range");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.writeMode))), "writeMode");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.table))), "table");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFix))), "fenixFix");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.prompt))), "prompt");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.arrayFixs))), "arrayFixs");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.autoComplete))), "autoComplete");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFramework))), "fenixFramework");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.color))), "color");
+	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.time))), "time");
 	    Context.enter();
-	   
+
 	    getContext().evaluateString(getScope(), "importClass(Packages." + "myorg.domain.MyOrg" + ");", "<boot>", 0, null);
 	    Context.exit();
 	}
+
 	@Override
 	public PrintStream out() {
 	    return console.getPrintStream();
 	}
-	
+
 	@Override
 	public PrintStream err() {
 	    return console.getPrintStream();
@@ -122,7 +118,7 @@ public class TesseractComponent extends CustomComponent implements EmbeddedCompo
     }
 
     @Override
-    public void setArguments(Map<String,String> arg0) {
+    public void setArguments(Map<String, String> arg0) {
     }
 
 }
