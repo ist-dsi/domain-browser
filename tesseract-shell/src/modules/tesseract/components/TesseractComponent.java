@@ -122,7 +122,7 @@ public class TesseractComponent extends CustomComponent implements EmbeddedCompo
     }
 
     @Override
-    public void setArguments(String... arg0) {
+    public void setArguments(Map<String,String> arg0) {
     }
 
 }
