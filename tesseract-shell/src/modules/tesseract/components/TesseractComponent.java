@@ -32,7 +32,7 @@ import com.vaadin.ui.CustomComponent;
 public class TesseractComponent extends CustomComponent implements EmbeddedComponentContainer {
 
     public class EmbebedTesseract extends JSConsole {
-	private Console console;
+	private final Console console;
 	private PrintStream stream;
 
 	public String decode(String string) throws IOException {
@@ -74,6 +74,7 @@ public class TesseractComponent extends CustomComponent implements EmbeddedCompo
 	    return console.getPrintStream();
 	}
 
+	@Override
 	public void finalize() {
 
 	}
@@ -118,6 +119,11 @@ public class TesseractComponent extends CustomComponent implements EmbeddedCompo
 	    }
 	});
 	setCompositionRoot(console);
+    }
+
+    @Override
+    public boolean isAllowedToOpen(Map<String, String> arguments) {
+	return true;
     }
 
     @Override
