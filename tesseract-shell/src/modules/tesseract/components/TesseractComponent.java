@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import modules.tesseract.TesseractRuntime;
+import myorg.util.Base64;
 
 import org.mozilla.javascript.Context;
 import org.vaadin.console.Console;
@@ -46,7 +47,6 @@ import org.vaadin.console.Console.Handler;
 import pt.ist.fenixframework.FenixFrameworkInitializer;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
-import sun.misc.BASE64Decoder;
 
 import com.surftheedge.tesseract.JSConsole;
 import com.surftheedge.tesseract.config.Config;
@@ -68,8 +68,7 @@ public class TesseractComponent extends CustomComponent implements EmbeddedCompo
 	private PrintStream stream;
 
 	public String decode(String string) throws IOException {
-	    BASE64Decoder decoder = new BASE64Decoder();
-	    byte[] decodedBytes = decoder.decodeBuffer(string);
+	    byte[] decodedBytes = Base64.decode(string);
 	    return new String(decodedBytes);
 	}
 
