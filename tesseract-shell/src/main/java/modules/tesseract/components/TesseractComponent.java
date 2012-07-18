@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Set;
 
 import modules.tesseract.TesseractRuntime;
-import myorg.util.Base64;
+import pt.ist.bennu.core.util.Base64;
 
 import org.mozilla.javascript.Context;
 import org.vaadin.console.Console;
@@ -91,7 +91,7 @@ public class TesseractComponent extends CustomComponent implements EmbeddedCompo
 	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.time))), "time");
 	    Context.enter();
 
-	    getContext().evaluateString(getScope(), "importClass(Packages." + "myorg.domain.MyOrg" + ");", "<boot>", 0, null);
+	    getContext().evaluateString(getScope(), "importClass(Packages." + "pt.ist.bennu.core.domain.MyOrg" + ");", "<boot>", 0, null);
 	    Context.exit();
 	}
 

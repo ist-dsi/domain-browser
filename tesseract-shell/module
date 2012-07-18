@@ -1,2 +1,0 @@
-name=tesseract-shell
-depends=core,bennu-vaadin

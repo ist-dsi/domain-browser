@@ -27,10 +27,10 @@ package modules.tesseract;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import myorg.domain.RoleType;
-import myorg.domain.VirtualHost;
-import myorg.domain.contents.Node;
-import myorg.domain.groups.Role;
+import pt.ist.bennu.core.domain.RoleType;
+import pt.ist.bennu.core.domain.VirtualHost;
+import pt.ist.bennu.core.domain.contents.Node;
+import pt.ist.bennu.core.domain.groups.Role;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
