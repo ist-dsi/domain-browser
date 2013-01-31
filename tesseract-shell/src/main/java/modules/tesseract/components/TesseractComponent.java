@@ -37,13 +37,13 @@ import java.util.Map;
 import java.util.Set;
 
 import modules.tesseract.TesseractRuntime;
-import pt.ist.bennu.core.util.Base64;
 
 import org.mozilla.javascript.Context;
 import org.vaadin.console.Console;
 import org.vaadin.console.Console.Command;
 import org.vaadin.console.Console.Handler;
 
+import pt.ist.bennu.core.util.Base64;
 import pt.ist.fenixframework.FenixFrameworkInitializer;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
@@ -63,102 +63,103 @@ import com.vaadin.ui.CustomComponent;
  */
 public class TesseractComponent extends CustomComponent implements EmbeddedComponentContainer {
 
-    public class EmbebedTesseract extends JSConsole {
-	private final Console console;
-	private PrintStream stream;
+	public class EmbebedTesseract extends JSConsole {
+		private final Console console;
+		private PrintStream stream;
 
-	public String decode(String string) throws IOException {
-	    byte[] decodedBytes = Base64.decode(string);
-	    return new String(decodedBytes);
+		public String decode(String string) throws IOException {
+			byte[] decodedBytes = Base64.decode(string);
+			return new String(decodedBytes);
+		}
+
+		public EmbebedTesseract(Console console) throws IOException {
+			super(new ArrayList<String>(), null, new String[] {});
+			Config.set("disableTransactions", true, getContext(), getScope());
+			this.console = console;
+
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.stringsFix))), "stringsFix");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.linq))), "linq");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.range))), "range");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.writeMode))), "writeMode");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.table))), "table");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFix))), "fenixFix");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.prompt))), "prompt");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.arrayFixs))), "arrayFixs");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.autoComplete))), "autoComplete");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFramework))), "fenixFramework");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.color))), "color");
+			loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.time))), "time");
+			Context.enter();
+
+			getContext().evaluateString(getScope(), "importClass(Packages." + "pt.ist.bennu.core.domain.MyOrg" + ");", "<boot>",
+					0, null);
+			Context.exit();
+		}
+
+		@Override
+		public PrintStream out() {
+			return console.getPrintStream();
+		}
+
+		@Override
+		public PrintStream err() {
+			return console.getPrintStream();
+		}
+
+		@Override
+		public void finalize() {
+
+		}
 	}
 
-	public EmbebedTesseract(Console console) throws IOException {
-	    super(new ArrayList<String>(), null, new String[] {});
-	    Config.set("disableTransactions", true, getContext(), getScope());
-	    this.console = console;
-
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.stringsFix))), "stringsFix");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.linq))), "linq");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.range))), "range");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.writeMode))), "writeMode");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.table))), "table");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFix))), "fenixFix");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.prompt))), "prompt");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.arrayFixs))), "arrayFixs");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.autoComplete))), "autoComplete");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.fenixFramework))), "fenixFramework");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.color))), "color");
-	    loopFile(new BufferedReader(new StringReader(decode(TesseractRuntime.time))), "time");
-	    Context.enter();
-
-	    getContext().evaluateString(getScope(), "importClass(Packages." + "pt.ist.bennu.core.domain.MyOrg" + ");", "<boot>", 0, null);
-	    Context.exit();
+	private static File getApplicationDir() {
+		final URL url = FenixFrameworkInitializer.class.getResource("/configuration.properties");
+		try {
+			return new File(url.toURI()).getParentFile();
+		} catch (final URISyntaxException e) {
+			throw new Error(e);
+		}
 	}
 
-	@Override
-	public PrintStream out() {
-	    return console.getPrintStream();
-	}
-
-	@Override
-	public PrintStream err() {
-	    return console.getPrintStream();
-	}
-
-	@Override
-	public void finalize() {
-
-	}
-    }
-
-    private static File getApplicationDir() {
-	final URL url = FenixFrameworkInitializer.class.getResource("/configuration.properties");
-	try {
-	    return new File(url.toURI()).getParentFile();
-	} catch (final URISyntaxException e) {
-	    throw new Error(e);
-	}
-    }
-
-    public TesseractComponent() throws IOException {
-	Console console = new Console();
-	console.setHeight("500px");
-	final EmbebedTesseract et = new EmbebedTesseract(console);
-	console.print("Tesseract Shell for the Fenix Framework\n");
-	console.print("\n");
-	console.prompt();
-	console.setHandler(new Handler() {
-
-	    @Override
-	    public void inputReceived(Console console, String lastInput) {
-		et.doIt(lastInput);
+	public TesseractComponent() throws IOException {
+		Console console = new Console();
+		console.setHeight("500px");
+		final EmbebedTesseract et = new EmbebedTesseract(console);
+		console.print("Tesseract Shell for the Fenix Framework\n");
+		console.print("\n");
 		console.prompt();
-	    }
+		console.setHandler(new Handler() {
 
-	    @Override
-	    public void handleException(Console console, Exception e, Command cmd, String[] argv) {
-		et.out().print(e.getMessage());
-	    }
+			@Override
+			public void inputReceived(Console console, String lastInput) {
+				et.doIt(lastInput);
+				console.prompt();
+			}
 
-	    @Override
-	    public Set<String> getSuggestions(Console console, String lastInput) {
-		return new HashSet<String>();
-	    }
+			@Override
+			public void handleException(Console console, Exception e, Command cmd, String[] argv) {
+				et.out().print(e.getMessage());
+			}
 
-	    @Override
-	    public void commandNotFound(Console console, String[] argv) {
-	    }
-	});
-	setCompositionRoot(console);
-    }
+			@Override
+			public Set<String> getSuggestions(Console console, String lastInput) {
+				return new HashSet<String>();
+			}
 
-    @Override
-    public boolean isAllowedToOpen(Map<String, String> arguments) {
-	return true;
-    }
+			@Override
+			public void commandNotFound(Console console, String[] argv) {
+			}
+		});
+		setCompositionRoot(console);
+	}
 
-    @Override
-    public void setArguments(Map<String, String> arg0) {
-    }
+	@Override
+	public boolean isAllowedToOpen(Map<String, String> arguments) {
+		return true;
+	}
+
+	@Override
+	public void setArguments(Map<String, String> arg0) {
+	}
 
 }

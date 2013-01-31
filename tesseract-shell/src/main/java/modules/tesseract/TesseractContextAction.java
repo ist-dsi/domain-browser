@@ -27,15 +27,14 @@ package modules.tesseract;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import pt.ist.bennu.core.domain.RoleType;
-import pt.ist.bennu.core.domain.VirtualHost;
-import pt.ist.bennu.core.domain.contents.Node;
-import pt.ist.bennu.core.domain.groups.Role;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
+import pt.ist.bennu.core.domain.RoleType;
+import pt.ist.bennu.core.domain.VirtualHost;
+import pt.ist.bennu.core.domain.contents.Node;
+import pt.ist.bennu.core.domain.groups.Role;
 import pt.ist.bennu.vaadin.actions.VaadinContextAction;
 import pt.ist.bennu.vaadin.domain.contents.VaadinNode;
 import pt.ist.fenixWebFramework.servlets.functionalities.CreateNodeAction;
@@ -47,19 +46,18 @@ import pt.ist.fenixWebFramework.struts.annotations.Mapping;
  * @author Artur Ventura
  * 
  */
-public class TesseractContextAction extends VaadinContextAction{
-    
-    @CreateNodeAction(bundle = "TESSERACT_SHELL_RESOURCES", key = "tesseract.name", groupKey = "tesseract.group")
-    public final ActionForward createTesseractNode(final ActionMapping mapping, final ActionForm form,
-	    final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-	final VirtualHost virtualHost = getDomainObject(request, "virtualHostToManageId");
+public class TesseractContextAction extends VaadinContextAction {
 
-	final Node parent = getDomainObject(request, "parentOfNodesToManageId");
+	@CreateNodeAction(bundle = "TESSERACT_SHELL_RESOURCES", key = "tesseract.name", groupKey = "tesseract.group")
+	public final ActionForward createTesseractNode(final ActionMapping mapping, final ActionForm form,
+			final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+		final VirtualHost virtualHost = getDomainObject(request, "virtualHostToManageId");
 
-	String bundle = "resources.TesseractShellResources";
-	VaadinNode.createVaadinNode(virtualHost, parent, bundle, "tesseract.name",
-		"tesseract", Role.getRole(RoleType.MANAGER));
+		final Node parent = getDomainObject(request, "parentOfNodesToManageId");
 
-	return forwardToMuneConfiguration(request, virtualHost, parent);
-    }
+		String bundle = "resources.TesseractShellResources";
+		VaadinNode.createVaadinNode(virtualHost, parent, bundle, "tesseract.name", "tesseract", Role.getRole(RoleType.MANAGER));
+
+		return forwardToMuneConfiguration(request, virtualHost, parent);
+	}
 }
