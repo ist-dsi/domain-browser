@@ -48,16 +48,16 @@ import pt.ist.fenixWebFramework.struts.annotations.Mapping;
  */
 public class TesseractContextAction extends VaadinContextAction {
 
-	@CreateNodeAction(bundle = "TESSERACT_SHELL_RESOURCES", key = "tesseract.name", groupKey = "tesseract.group")
-	public final ActionForward createTesseractNode(final ActionMapping mapping, final ActionForm form,
-			final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-		final VirtualHost virtualHost = getDomainObject(request, "virtualHostToManageId");
+    @CreateNodeAction(bundle = "TESSERACT_SHELL_RESOURCES", key = "tesseract.name", groupKey = "tesseract.group")
+    public final ActionForward createTesseractNode(final ActionMapping mapping, final ActionForm form,
+            final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+        final VirtualHost virtualHost = getDomainObject(request, "virtualHostToManageId");
 
-		final Node parent = getDomainObject(request, "parentOfNodesToManageId");
+        final Node parent = getDomainObject(request, "parentOfNodesToManageId");
 
-		String bundle = "resources.TesseractShellResources";
-		VaadinNode.createVaadinNode(virtualHost, parent, bundle, "tesseract.name", "tesseract", Role.getRole(RoleType.MANAGER));
+        String bundle = "resources.TesseractShellResources";
+        VaadinNode.createVaadinNode(virtualHost, parent, bundle, "tesseract.name", "tesseract", Role.getRole(RoleType.MANAGER));
 
-		return forwardToMuneConfiguration(request, virtualHost, parent);
-	}
+        return forwardToMuneConfiguration(request, virtualHost, parent);
+    }
 }
