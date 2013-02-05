@@ -12,24 +12,24 @@ public class EvaluationTransaction implements TransactionalCommand {
     String source;
     Context cx;
     Scriptable scope;
-    private Object result; 
+    private Object result;
 
     public EvaluationTransaction(Context cx, Scriptable scope, String source) {
-	this.source = source;
-	this.cx = cx;
-	this.scope = scope;
+        this.source = source;
+        this.cx = cx;
+        this.scope = scope;
     }
 
     public void doIt() {
-	setResult(cx.evaluateString(scope,source, "<cmd>", 1, null));
+        setResult(cx.evaluateString(scope, source, "<cmd>", 1, null));
     }
 
     public void setResult(Object result) {
-	this.result = result;
+        this.result = result;
     }
 
     public Object getResult() {
-	return result;
+        return result;
     }
 
 }

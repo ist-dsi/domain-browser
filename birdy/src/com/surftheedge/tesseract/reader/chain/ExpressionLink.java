@@ -6,17 +6,15 @@ import com.surftheedge.tesseract.expression.ExpressionExpression;
 public class ExpressionLink extends ParsingLink {
 
     @Override
-    public
-    Expression execute(String expression) {
-	Expression expr = new ExpressionExpression();
-	expr.setContent(expression);
-	return expr;
+    public Expression execute(String expression) {
+        Expression expr = new ExpressionExpression();
+        expr.setContent(expression);
+        return expr;
     }
 
     @Override
-    public
-    boolean filter(String expression) {
-	return expression.charAt(expression.length() - 1) != ';';
+    public boolean filter(String expression) {
+        return expression.charAt(expression.length() - 1) != ';';
     }
 
 }

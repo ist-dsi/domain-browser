@@ -15,27 +15,27 @@ import pt.ist.fenixframework.pstm.Transaction;
 
 public class MJava {
     public static void main() throws Exception {
-	while (true) {
-	    Transaction.withTransaction(true, new TransactionalCommand() {
-		public void doIt() {
-		    Expression expression;
-		    try {
-			expression = Reader.read();
-			if (expression != null) {
-			    Object result = Evaluator.eval(expression);
-			    Printer.print(com.surftheedge.tesseract.utils.InternalRepresentation.convert(result), expression);
-			}
-		    } catch (CannotCompileException e) {
-			ExceptionHandler.failedCompilation(e);
-		    } catch (EndOfFileException e) {
-			System.exit(0);
-		    } catch (Exception e){
-			e.printStackTrace();
-			System.exit(-1);
-		    }
-		}
-	    });
-	}
+        while (true) {
+            Transaction.withTransaction(true, new TransactionalCommand() {
+                public void doIt() {
+                    Expression expression;
+                    try {
+                        expression = Reader.read();
+                        if (expression != null) {
+                            Object result = Evaluator.eval(expression);
+                            Printer.print(com.surftheedge.tesseract.utils.InternalRepresentation.convert(result), expression);
+                        }
+                    } catch (CannotCompileException e) {
+                        ExceptionHandler.failedCompilation(e);
+                    } catch (EndOfFileException e) {
+                        System.exit(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
+                }
+            });
+        }
     }
 
 }

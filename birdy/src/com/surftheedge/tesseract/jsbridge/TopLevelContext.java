@@ -22,112 +22,117 @@ public class TopLevelContext extends ImporterTopLevel {
 
     private static final long serialVersionUID = 1L;
     private JSConsole engine;
-    public static String[] names = { "map", "reduce", "filter", "print", "printf", "whatis", "find","run","reloadRuntime" };
+    public static String[] names = { "map", "reduce", "filter", "print", "printf", "whatis", "find", "run", "reloadRuntime" };
+
     public TopLevelContext() {
     }
 
     public TopLevelContext(Context cx) {
-	super();
-	init(cx);
+        super();
+        init(cx);
     }
 
     public void init(Context cx) {
-	initStandardObjects(cx, false);
-	defineFunctionProperties(names, TopLevelContext.class, ScriptableObject.DONTENUM);
+        initStandardObjects(cx, false);
+        defineFunctionProperties(names, TopLevelContext.class, ScriptableObject.DONTENUM);
     }
 
     public static void run(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	String filename = (String) args[0];
-	File file = new File(filename);
-	FileReader fir;
-	try {
-	    fir = new FileReader(file);
-	    BufferedReader br = new BufferedReader(fir);
-	    JSConsole.instance.loopFile(br, filename);
-	} catch (FileNotFoundException e) {
-	    System.err.print("File '" + filename + "' was not found");
-	}
+        String filename = (String) args[0];
+        File file = new File(filename);
+        FileReader fir;
+        try {
+            fir = new FileReader(file);
+            BufferedReader br = new BufferedReader(fir);
+            JSConsole.instance.loopFile(br, filename);
+        } catch (FileNotFoundException e) {
+            System.err.print("File '" + filename + "' was not found");
+        }
     }
+
     public static void reloadRuntime(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	JSConsole.instance.loadResources();
+        JSConsole.instance.loadResources();
     }
 
     public static Object map(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	NativeJavaObject njo = (NativeJavaObject) args[0];
-	NativeArray array = (NativeArray) cx.newArray(thisObj, 0);
-	Function f = (Function) args[1];
-	Collection list = (Collection) njo.unwrap();
-	int i = 0;
-	for (Object o : list) {
-	    Object[] argx = { o, Context.javaToJS(i, f), njo };
-	    Object r = f.call(cx, thisObj, f, argx);
-	    array.put((int) array.getLength(), array, Context.javaToJS(r, f));
-	    i++;
-	}
-	return array;
+        NativeJavaObject njo = (NativeJavaObject) args[0];
+        NativeArray array = (NativeArray) cx.newArray(thisObj, 0);
+        Function f = (Function) args[1];
+        Collection list = (Collection) njo.unwrap();
+        int i = 0;
+        for (Object o : list) {
+            Object[] argx = { o, Context.javaToJS(i, f), njo };
+            Object r = f.call(cx, thisObj, f, argx);
+            array.put((int) array.getLength(), array, Context.javaToJS(r, f));
+            i++;
+        }
+        return array;
     }
 
     public static void print(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	for (Object result : args) {
-	    System.out.print(Context.toString(result));
-	}
+        for (Object result : args) {
+            System.out.print(Context.toString(result));
+        }
     }
 
     public static void printf(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	Object[] o = new Object[args.length - 1];
-	System.arraycopy(args, 1, o, 0, args.length - 1);
-	System.out.printf((String) args[0], o);
+        Object[] o = new Object[args.length - 1];
+        System.arraycopy(args, 1, o, 0, args.length - 1);
+        System.out.printf((String) args[0], o);
     }
 
     public static Object reduce(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	NativeJavaObject njo = (NativeJavaObject) args[0];
-	Function f = (Function) args[1];
-	Collection list = (Collection) njo.unwrap();
-	int i = 0;
-	Object or = null;
-	for (Object o : list) {
-	    if (i==1) { or = o; continue;}
-	    Object[] argx = { or, o, i, njo };
-	    or = f.call(cx, thisObj, f, argx);
-	    i++;
-	}
-	return or;
+        NativeJavaObject njo = (NativeJavaObject) args[0];
+        Function f = (Function) args[1];
+        Collection list = (Collection) njo.unwrap();
+        int i = 0;
+        Object or = null;
+        for (Object o : list) {
+            if (i == 1) {
+                or = o;
+                continue;
+            }
+            Object[] argx = { or, o, i, njo };
+            or = f.call(cx, thisObj, f, argx);
+            i++;
+        }
+        return or;
     }
 
     public static Object filter(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	NativeArray array = (NativeArray) cx.newArray(thisObj, 0);
-	NativeJavaObject njo = (NativeJavaObject) args[0];
-	Function f = (Function) args[1];
-	Collection list = (Collection) njo.unwrap();
-	int i = 0;
-	for (Object o : list) {
-	    Object[] argx = { o, i, njo };
-	    Object r = f.call(cx, thisObj, f, argx);
-	    if (r != null && r.getClass() != Undefined.class && !r.equals(false)) {
-		array.put((int) array.getLength(), array, o);
-	    }
-	}
+        NativeArray array = (NativeArray) cx.newArray(thisObj, 0);
+        NativeJavaObject njo = (NativeJavaObject) args[0];
+        Function f = (Function) args[1];
+        Collection list = (Collection) njo.unwrap();
+        int i = 0;
+        for (Object o : list) {
+            Object[] argx = { o, i, njo };
+            Object r = f.call(cx, thisObj, f, argx);
+            if (r != null && r.getClass() != Undefined.class && !r.equals(false)) {
+                array.put((int) array.getLength(), array, o);
+            }
+        }
 
-	return array;
+        return array;
     }
 
     public static Object find(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	NativeJavaObject njo = (NativeJavaObject) args[0];
-	Function f = (Function) args[1];
-	Collection list = (Collection) njo.unwrap();
-	int i = 0;
-	for (Object o : list) {
-	    Object[] argx = { o, i, njo };
-	    Object r = f.call(cx, thisObj, f, argx);
-	    if (r != null && r.getClass() != Undefined.class && !r.equals(false)) {
-		return Context.javaToJS(o, f);
-	    }
-	}
-	return null;
+        NativeJavaObject njo = (NativeJavaObject) args[0];
+        Function f = (Function) args[1];
+        Collection list = (Collection) njo.unwrap();
+        int i = 0;
+        for (Object o : list) {
+            Object[] argx = { o, i, njo };
+            Object r = f.call(cx, thisObj, f, argx);
+            if (r != null && r.getClass() != Undefined.class && !r.equals(false)) {
+                return Context.javaToJS(o, f);
+            }
+        }
+        return null;
     }
 
     public static Object whatis(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-	return args[0].getClass().getName();
+        return args[0].getClass().getName();
     }
 
 }

@@ -8,23 +8,23 @@ public abstract class Strategy {
     private boolean canEval;
 
     public Strategy(boolean canEval) {
-	setCanEval(canEval);
+        setCanEval(canEval);
     }
 
     public boolean canEval() {
-	return canEval;
+        return canEval;
     }
 
     private void setCanEval(boolean evalueable) {
-	this.canEval = evalueable;
+        this.canEval = evalueable;
     }
 
     public Expression getExpression() {
-	return expression;
+        return expression;
     }
 
     public void setExpression(Expression expression) {
-	this.expression = expression;
+        this.expression = expression;
     }
 
     abstract public Class execute() throws Exception;

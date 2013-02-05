@@ -19,51 +19,53 @@ import com.smartgwt.client.widgets.events.DropHandler;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 
-public class DetailedMenuItem extends VLayout{
+public class DetailedMenuItem extends VLayout {
     private Strategy strategy;
-    public DetailedMenuItem(final CanvasWorkbench cw,String name,String content, String icon,Strategy s) {
-	Label title = new Label("<b>" + name +"</b>");
-	setAlign(VerticalAlignment.TOP);
-	title.setWidth100();
-	HLayout header = new HLayout();
-	header.setAlign(Alignment.LEFT);
-	Image img = new Image(icon);
-	img.setHeight("16px");
-	img.setWidth("16px");
-	HLayout space = new HLayout();
-	space.setWidth(10);
-	
-	header.addMember(img);
-	header.addMember(space);
-	header.addMember(title);
-	
-	Label description = new Label(content);
-	description.setHeight(10);
-	setWidth100();
-	setHeight(10);
-	setPadding(5);
-	addMember(header);
-	title.setHeight(20);
 
-	
+    public DetailedMenuItem(final CanvasWorkbench cw, String name, String content, String icon, Strategy s) {
+        Label title = new Label("<b>" + name + "</b>");
+        setAlign(VerticalAlignment.TOP);
+        title.setWidth100();
+        HLayout header = new HLayout();
+        header.setAlign(Alignment.LEFT);
+        Image img = new Image(icon);
+        img.setHeight("16px");
+        img.setWidth("16px");
+        HLayout space = new HLayout();
+        space.setWidth(10);
+
+        header.addMember(img);
+        header.addMember(space);
+        header.addMember(title);
+
+        Label description = new Label(content);
+        description.setHeight(10);
+        setWidth100();
+        setHeight(10);
+        setPadding(5);
+        addMember(header);
+        title.setHeight(20);
+
         setCanDragReposition(true);
         setCanDrop(true);
-	setDragAppearance(DragAppearance.TARGET);
-	addMember(description);
-	setBackgroundColor("#ffffff");
-	this.setStrategy(s);
-	addDragRepositionStartHandler(new DragRepositionStartHandler() {
-	    
-	    @Override
-	    public void onDragRepositionStart(DragRepositionStartEvent event) {
-		Mouse.setStrategy(DetailedMenuItem.this);
-	    }
-	});
+        setDragAppearance(DragAppearance.TARGET);
+        addMember(description);
+        setBackgroundColor("#ffffff");
+        this.setStrategy(s);
+        addDragRepositionStartHandler(new DragRepositionStartHandler() {
+
+            @Override
+            public void onDragRepositionStart(DragRepositionStartEvent event) {
+                Mouse.setStrategy(DetailedMenuItem.this);
+            }
+        });
     }
+
     public void setStrategy(Strategy strategy) {
-	this.strategy = strategy;
+        this.strategy = strategy;
     }
+
     public Strategy getStrategy() {
-	return strategy;
+        return strategy;
     }
 }

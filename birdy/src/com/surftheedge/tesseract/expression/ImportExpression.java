@@ -7,15 +7,15 @@ public class ImportExpression extends Expression {
     private String aPackage;
 
     public ImportExpression(String aPackage) {
-	super(new ImportStrategy());
-	setPackage(aPackage);
+        super(new ImportStrategy());
+        setPackage(aPackage);
     }
 
     public String getPackage() {
-	return aPackage;
+        return aPackage;
     }
 
     public void setPackage(String package1) {
-	aPackage = package1;
+        aPackage = package1;
     }
 }

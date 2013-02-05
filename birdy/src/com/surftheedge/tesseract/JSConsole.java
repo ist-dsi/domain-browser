@@ -35,120 +35,120 @@ public class JSConsole {
     public ConsoleReader reader;
 
     public JSConsole(List<String> importDirectory) throws IOException {
-	this.importDirectory = importDirectory;
-	cx = Context.enter();
-	scope = new TopLevelContext(cx);
-	JSConsole.instance = this;
-	if (System.console() != null) {
-	    reader = new ConsoleReader();
-	    reader.addCompletor(new SemanticIntrospection(cx,scope));
-	}
-	cx.evaluateString(scope, "importClass(Packages." + Loader.rootClass + ");", "<boot>", 0, null);
+        this.importDirectory = importDirectory;
+        cx = Context.enter();
+        scope = new TopLevelContext(cx);
+        JSConsole.instance = this;
+        if (System.console() != null) {
+            reader = new ConsoleReader();
+            reader.addCompletor(new SemanticIntrospection(cx, scope));
+        }
+        cx.evaluateString(scope, "importClass(Packages." + Loader.rootClass + ");", "<boot>", 0, null);
     }
 
     public String reader(BufferedReader in) {
-	String source = "";
-	boolean wrote = false;
-	while (true) {
-	    String newline;
-	    try {
-		if (System.console() != null) {
-		    newline = reader.readLine(wrote ?  "" : prompts[0]);
-		    wrote = true;
-		} else {
-		    newline = in.readLine();
-		}
-	    } catch (IOException ioe) {
-		ps.println(ioe.toString());
-		break;
-	    }
-	    if (newline == null) {
-		return null;
-	    }
-	    source = source + newline + "\n";
-	    if (cx.stringIsCompilableUnit(source))
-		return source;
-	}
-	return null;
+        String source = "";
+        boolean wrote = false;
+        while (true) {
+            String newline;
+            try {
+                if (System.console() != null) {
+                    newline = reader.readLine(wrote ? "" : prompts[0]);
+                    wrote = true;
+                } else {
+                    newline = in.readLine();
+                }
+            } catch (IOException ioe) {
+                ps.println(ioe.toString());
+                break;
+            }
+            if (newline == null) {
+                return null;
+            }
+            source = source + newline + "\n";
+            if (cx.stringIsCompilableUnit(source))
+                return source;
+        }
+        return null;
     }
 
     private String slurp(Reader in) throws IOException {
-	StringBuffer out = new StringBuffer();
-	char[] b = new char[4096];
-	for (int n; (n = in.read(b)) != -1;) {
-	    out.append(new String(b, 0, n));
-	}
-	return out.toString();
+        StringBuffer out = new StringBuffer();
+        char[] b = new char[4096];
+        for (int n; (n = in.read(b)) != -1;) {
+            out.append(new String(b, 0, n));
+        }
+        return out.toString();
     }
 
     public void loopFile(BufferedReader in, String file) {
-	try {
-	    while (true) {
-		String source = slurp(in);
-		try {
-		    cx.evaluateString(scope, source, file, 1, null);
-		    return;
-		} catch (EvaluatorException e) {
-		    System.out.println("Error while loading runtime: " + e.getMessage());
-		    System.exit(-1);
-		}
-	    }
-	} catch (IOException e1) {
-	    e1.printStackTrace();
-	}
+        try {
+            while (true) {
+                String source = slurp(in);
+                try {
+                    cx.evaluateString(scope, source, file, 1, null);
+                    return;
+                } catch (EvaluatorException e) {
+                    System.out.println("Error while loading runtime: " + e.getMessage());
+                    System.exit(-1);
+                }
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
     public void loopSource(BufferedReader in) {
-	while (true) {
-	    String source = reader(in);
-	    if (source == null) {
-		break;
-	    }
+        while (true) {
+            String source = reader(in);
+            if (source == null) {
+                break;
+            }
 
-	    Transaction.withTransaction(true, new EvaluationTransaction(cx, scope, source));
-	}
-	if (System.console() != null) {
-	    ps.println();
-	}
+            Transaction.withTransaction(true, new EvaluationTransaction(cx, scope, source));
+        }
+        if (System.console() != null) {
+            ps.println();
+        }
     }
 
     public void loadDirectory(File f) {
-	String[] children = f.list();
-	if (children == null) {
-	} else {
-	    for (int i = 0; i < children.length; i++) {
-		File child = new File(f.getPath() + "/" + children[i]);
-		if (child.isDirectory()) {
-		    loadDirectory(child);
-		} else if (child.isFile() && !child.isHidden()) {
-		    if (children[i].endsWith(".js") && !loadedFiles.containsKey(f.getPath() + "/" + children[i])) {
-			loadedFiles.put(f.getPath() + "/" + children[i], child);
-		    }
-		}
-	    }
-	}
+        String[] children = f.list();
+        if (children == null) {
+        } else {
+            for (int i = 0; i < children.length; i++) {
+                File child = new File(f.getPath() + "/" + children[i]);
+                if (child.isDirectory()) {
+                    loadDirectory(child);
+                } else if (child.isFile() && !child.isHidden()) {
+                    if (children[i].endsWith(".js") && !loadedFiles.containsKey(f.getPath() + "/" + children[i])) {
+                        loadedFiles.put(f.getPath() + "/" + children[i], child);
+                    }
+                }
+            }
+        }
     }
 
     public void loadResources() {
-	for (String r : importDirectory) {
-	    loadDirectory(new File(r));
-	}
-	for (java.util.Map.Entry<String, File> f : loadedFiles.entrySet()) {
-	    File file = f.getValue();
-	    try {
-		FileReader fir = new FileReader(file);
-		BufferedReader br = new BufferedReader(fir);
-		System.out.println("loaded: " + f.getKey());
-		loopFile(br, f.getKey());
-	    } catch (FileNotFoundException e) {
-		System.out.println("file not found: " + f.getKey());
-	    }
-	}
+        for (String r : importDirectory) {
+            loadDirectory(new File(r));
+        }
+        for (java.util.Map.Entry<String, File> f : loadedFiles.entrySet()) {
+            File file = f.getValue();
+            try {
+                FileReader fir = new FileReader(file);
+                BufferedReader br = new BufferedReader(fir);
+                System.out.println("loaded: " + f.getKey());
+                loopFile(br, f.getKey());
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found: " + f.getKey());
+            }
+        }
     }
 
     public void exec() {
-	BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-	loadResources();
-	loopSource(in);
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        loadResources();
+        loopSource(in);
     }
 }

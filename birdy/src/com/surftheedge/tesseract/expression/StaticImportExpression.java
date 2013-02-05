@@ -7,15 +7,15 @@ public class StaticImportExpression extends Expression {
     private String aPackage;
 
     public StaticImportExpression() {
-	super(new StaticImportStrategy());
+        super(new StaticImportStrategy());
     }
 
     public String getPackage() {
-	return aPackage;
+        return aPackage;
     }
 
     public void setPackage(String package1) {
-	aPackage = package1;
+        aPackage = package1;
     }
 
 }

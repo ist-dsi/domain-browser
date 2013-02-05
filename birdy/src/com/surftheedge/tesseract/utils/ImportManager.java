@@ -7,19 +7,19 @@ public class ImportManager {
     private static List<String> imports = new ArrayList<String>();
 
     static {
-	imports.add("eu.ist.fears.server.domain");
+        imports.add("eu.ist.fears.server.domain");
     };
-   
+
     public static List<String> getImports() {
-	return imports;
+        return imports;
     }
 
     public static void addImport(String name) {
-	getImports().add(name);
+        getImports().add(name);
     }
 
     public static void removeImport(String name) {
-	getImports().remove(name);
+        getImports().remove(name);
     }
 
 }

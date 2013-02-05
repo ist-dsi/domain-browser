@@ -28,104 +28,104 @@ public class SVGCanvas extends Canvas {
     protected FingRaphael raphael;
 
     private class FingRaphael extends Raphael implements HasClickHandlers, HasMouseWheelHandlers, HasMouseDownHandlers,
-	    HasMouseUpHandlers, HasMouseMoveHandlers {
-	public FingRaphael(int width, int height) {
-	    super(width, height);
-	}
+            HasMouseUpHandlers, HasMouseMoveHandlers {
+        public FingRaphael(int width, int height) {
+            super(width, height);
+        }
 
-	public HandlerRegistration addClickHandler(ClickHandler handler) {
-	    return this.addDomHandler(handler, ClickEvent.getType());
-	}
+        public HandlerRegistration addClickHandler(ClickHandler handler) {
+            return this.addDomHandler(handler, ClickEvent.getType());
+        }
 
-	public HandlerRegistration addMouseWheelHandler(MouseWheelHandler handler) {
-	    return this.addDomHandler(handler, MouseWheelEvent.getType());
-	}
+        public HandlerRegistration addMouseWheelHandler(MouseWheelHandler handler) {
+            return this.addDomHandler(handler, MouseWheelEvent.getType());
+        }
 
-	public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
-	    return this.addDomHandler(handler, MouseDownEvent.getType());
-	}
+        public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
+            return this.addDomHandler(handler, MouseDownEvent.getType());
+        }
 
-	public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
-	    return this.addDomHandler(handler, MouseUpEvent.getType());
-	}
+        public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
+            return this.addDomHandler(handler, MouseUpEvent.getType());
+        }
 
-	public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
-	    return this.addDomHandler(handler, MouseMoveEvent.getType());
-	}
-	
+        public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
+            return this.addDomHandler(handler, MouseMoveEvent.getType());
+        }
+
     }
 
     public SVGCanvas() {
-	super();
-	setHeight100();
-	setWidth100();
+        super();
+        setHeight100();
+        setWidth100();
     }
 
     @Override
     protected void onDraw() {
-	super.onDraw();
-	raphael = new FingRaphael(this.getWidth(), this.getHeight());
-	final WidgetCanvas inter = new WidgetCanvas(raphael);
-	inter.setWidth(this.getWidth());
-	inter.setHeight(this.getHeight());
-	addChild(inter);
-	this.addResizedHandler(new ResizedHandler() {
+        super.onDraw();
+        raphael = new FingRaphael(this.getWidth(), this.getHeight());
+        final WidgetCanvas inter = new WidgetCanvas(raphael);
+        inter.setWidth(this.getWidth());
+        inter.setHeight(this.getHeight());
+        addChild(inter);
+        this.addResizedHandler(new ResizedHandler() {
 
-	    public void onResized(ResizedEvent event) {
-		inter.setHeight(getHeight());
-		inter.setWidth(getWidth());
-		raphael.setHeight("" + getHeight());
-		raphael.setWidth("" + getWidth());
-	    }
-	});
+            public void onResized(ResizedEvent event) {
+                inter.setHeight(getHeight());
+                inter.setWidth(getWidth());
+                raphael.setHeight("" + getHeight());
+                raphael.setWidth("" + getWidth());
+            }
+        });
     }
-    
-    public Element getSVGElement(){
-	return raphael.getElement();
+
+    public Element getSVGElement() {
+        return raphael.getElement();
     }
 
     public Rectangle drawRectangle(double x, double y, double w, double h) {
-	return new Rectangle(this, x, y, w, h);
+        return new Rectangle(this, x, y, w, h);
     }
 
     public Text drawText(double x, double y, String text) {
-	return new Text(this, x, y, text);
+        return new Text(this, x, y, text);
     }
-    
+
     public Circle drawCircle(double x, double y, double r) {
-	return new Circle(this, x, y,r);
+        return new Circle(this, x, y, r);
     }
-    
+
     public Path drawPath(String string) {
-	return new Path(this, string);
+        return new Path(this, string);
     }
-    
+
     public Path drawPath(PathBuilder pb) {
-	pb.draw();
-	return new Path(this, pb.getProgram());
+        pb.draw();
+        return new Path(this, pb.getProgram());
     }
 
     public SVGComposite getComposite() {
-	return new SVGComposite(this);
+        return new SVGComposite(this);
     }
 
     public HandlerRegistration addClickHandler(ClickHandler handler) {
-	return raphael.addClickHandler(handler);
+        return raphael.addClickHandler(handler);
     }
 
     public HandlerRegistration addMouseWheelHandler(MouseWheelHandler handler) {
-	return raphael.addMouseWheelHandler(handler);
+        return raphael.addMouseWheelHandler(handler);
     }
 
     public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
-	return raphael.addMouseDownHandler(handler);
+        return raphael.addMouseDownHandler(handler);
     }
 
     public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
-	return raphael.addMouseUpHandler(handler);
+        return raphael.addMouseUpHandler(handler);
     }
 
     public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
-	return raphael.addMouseMoveHandler(handler);
+        return raphael.addMouseMoveHandler(handler);
     }
 }

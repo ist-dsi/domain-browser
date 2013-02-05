@@ -1,6 +1,5 @@
 package com.surftheedge.tesseract.expression;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,37 +11,37 @@ public class ClassDeclarationExpression extends Expression {
     private String body;
     private String superClass;
     private List<Expression> statements = new ArrayList<Expression>();
-    
+
     public List<Expression> getStatements() {
         return statements;
     }
-    
+
     public ClassDeclarationExpression() {
-	super(new ClassDeclarationStrategy());
+        super(new ClassDeclarationStrategy());
     }
 
     public void setSuperClass(String superClass) {
-	this.superClass = superClass;
+        this.superClass = superClass;
     }
 
     public String getSuperClass() {
-	return superClass;
+        return superClass;
     }
 
     public void setClassName(String className) {
-	this.className = className;
+        this.className = className;
     }
 
     public String getClassName() {
-	return className;
+        return className;
     }
 
     public void setBody(String body) {
-	this.body = body;
+        this.body = body;
     }
 
     public String getBody() {
-	return body;
+        return body;
     }
 
 }

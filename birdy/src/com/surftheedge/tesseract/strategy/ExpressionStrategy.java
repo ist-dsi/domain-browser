@@ -8,23 +8,23 @@ import javassist.CtClass;
 import javassist.CtMember;
 import javassist.CtMethod;
 
-public class ExpressionStrategy extends Strategy implements Printable{
+public class ExpressionStrategy extends Strategy implements Printable {
 
     public ExpressionStrategy() {
-	super(Evaluator.EVALUATE);
+        super(Evaluator.EVALUATE);
     }
 
     @Override
     public Class execute() throws Exception {
-	StackClass theClass = Stack.getEvaluationClass(); 
-	String template = "public static Object $eval () { " + " return com.surftheedge.tesseract.utils.InternalRepresentation.convert("
-		+ getExpression().getContent() + "); }";
-	theClass.addStackMethod(template);
-	return theClass.commit();
+        StackClass theClass = Stack.getEvaluationClass();
+        String template =
+                "public static Object $eval () { " + " return com.surftheedge.tesseract.utils.InternalRepresentation.convert("
+                        + getExpression().getContent() + "); }";
+        theClass.addStackMethod(template);
+        return theClass.commit();
     }
 
-  
     public void print(Object object) {
-	System.out.println(object);
+        System.out.println(object);
     }
 }

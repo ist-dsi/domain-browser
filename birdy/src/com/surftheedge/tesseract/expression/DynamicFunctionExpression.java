@@ -3,11 +3,10 @@ package com.surftheedge.tesseract.expression;
 import com.surftheedge.tesseract.expression.functionSignature.FunctionSignature;
 import com.surftheedge.tesseract.strategy.DynamicFunctionStrategy;
 
-
-public class DynamicFunctionExpression extends Expression{
+public class DynamicFunctionExpression extends Expression {
 
     private String body;
-    
+
     public String getBody() {
         return body;
     }
@@ -17,7 +16,7 @@ public class DynamicFunctionExpression extends Expression{
     }
 
     private FunctionSignature signature;
-    
+
     public FunctionSignature getFunction() {
         return signature;
     }
@@ -25,9 +24,9 @@ public class DynamicFunctionExpression extends Expression{
     public void setFunction(FunctionSignature f) {
         this.signature = f;
     }
-    
+
     public DynamicFunctionExpression() {
-	super(new DynamicFunctionStrategy());
+        super(new DynamicFunctionStrategy());
     }
 
 }

@@ -30,15 +30,15 @@ public class Color implements Serializable {
      *            alpha channel [0.0, 1.0]
      */
     public Color(int red, int green, int blue, double alpha) {
-	this.red = red;
-	this.green = green;
-	this.blue = blue;
-	this.alpha = alpha;
-	if (alpha == 1) {
-	    hasAlpha = false;
-	} else {
-	    hasAlpha = true;
-	}
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
+        this.alpha = alpha;
+        if (alpha == 1) {
+            hasAlpha = false;
+        } else {
+            hasAlpha = true;
+        }
     }
 
     /**
@@ -53,16 +53,16 @@ public class Color implements Serializable {
      *            blue channel [0-255]
      */
     public Color(int red, int green, int blue) {
-	this(red, green, blue, DEFAULT_ALPHA);
+        this(red, green, blue, DEFAULT_ALPHA);
     }
 
     public Color(String code) {
 
-	red = Integer.parseInt("" + code.subSequence(1, 1 + 2), 16);
-	green = Integer.parseInt("" + code.subSequence(1 + 2, 1 + 4), 16);
-	blue = Integer.parseInt("" + code.subSequence(1 + 4, 1 + 6), 16);
-	alpha = DEFAULT_ALPHA;
-	hasAlpha = false;
+        red = Integer.parseInt("" + code.subSequence(1, 1 + 2), 16);
+        green = Integer.parseInt("" + code.subSequence(1 + 2, 1 + 4), 16);
+        blue = Integer.parseInt("" + code.subSequence(1 + 4, 1 + 6), 16);
+        alpha = DEFAULT_ALPHA;
+        hasAlpha = false;
 
     }
 
@@ -76,9 +76,9 @@ public class Color implements Serializable {
      * @return a new interpolated color.
      */
     public static final Color lerp(Color value1, Color value2, double amount) {
-	return new Color((int) MathHelper.lerp(value1.getR(), value2.getR(), amount), (int) MathHelper.lerp(value1.getG(), value2
-		.getG(), amount), (int) MathHelper.lerp(value1.getB(), value2.getB(), amount), MathHelper.lerp(value1.getAlpha(),
-		value2.getAlpha(), amount));
+        return new Color((int) MathHelper.lerp(value1.getR(), value2.getR(), amount), (int) MathHelper.lerp(value1.getG(),
+                value2.getG(), amount), (int) MathHelper.lerp(value1.getB(), value2.getB(), amount), MathHelper.lerp(
+                value1.getAlpha(), value2.getAlpha(), amount));
     }
 
     /**
@@ -91,24 +91,24 @@ public class Color implements Serializable {
      * @return a new interpolated color.
      */
     public static final Color smoothStep(Color value1, Color value2, double amount) {
-	return new Color((int) MathHelper.smoothStep(value1.getR(), value2.getR(), amount), (int) MathHelper.smoothStep(value1
-		.getG(), value2.getG(), amount), (int) MathHelper.smoothStep(value1.getB(), value2.getB(), amount), MathHelper
-		.smoothStep(value1.getAlpha(), value2.getAlpha(), amount));
+        return new Color((int) MathHelper.smoothStep(value1.getR(), value2.getR(), amount), (int) MathHelper.smoothStep(
+                value1.getG(), value2.getG(), amount), (int) MathHelper.smoothStep(value1.getB(), value2.getB(), amount),
+                MathHelper.smoothStep(value1.getAlpha(), value2.getAlpha(), amount));
     }
 
     /**
      * Gets the string representation of the color.
      */
     public final String getColorCode() {
-	if (hasAlpha) {
-	    return new StringBuilder(21).append("rgba(").append(red).append(',').append(green).append(',').append(blue).append(
-		    ',').append(alpha).append(')').toString();
-	} else {
-	    StringBuilder stringBuilder = new StringBuilder("#000000");
-	    String hexString = Integer.toHexString(getHexValue(red, green, blue));
-	    return stringBuilder.replace(stringBuilder.length() - hexString.length(), stringBuilder.length(), hexString)
-		    .toString();
-	}
+        if (hasAlpha) {
+            return new StringBuilder(21).append("rgba(").append(red).append(',').append(green).append(',').append(blue)
+                    .append(',').append(alpha).append(')').toString();
+        } else {
+            StringBuilder stringBuilder = new StringBuilder("#000000");
+            String hexString = Integer.toHexString(getHexValue(red, green, blue));
+            return stringBuilder.replace(stringBuilder.length() - hexString.length(), stringBuilder.length(), hexString)
+                    .toString();
+        }
     }
 
     /**
@@ -117,7 +117,7 @@ public class Color implements Serializable {
      * @return a value between 0 to 255, inclusive.
      */
     public final int getR() {
-	return red;
+        return red;
     }
 
     /**
@@ -126,7 +126,7 @@ public class Color implements Serializable {
      * @return a value between 0 to 255, inclusive.
      */
     public final int getG() {
-	return green;
+        return green;
     }
 
     /**
@@ -135,7 +135,7 @@ public class Color implements Serializable {
      * @return a value between 0 to 255, inclusive.
      */
     public final int getB() {
-	return blue;
+        return blue;
     }
 
     /**
@@ -144,32 +144,32 @@ public class Color implements Serializable {
      * @return a value between 0.0 to 1.0, inclusive.
      */
     public final double getAlpha() {
-	return alpha;
+        return alpha;
     }
 
     @Override
     public final String toString() {
-	return getColorCode();
+        return getColorCode();
     }
 
     @Override
     public final boolean equals(Object obj) {
-	return (obj instanceof Color) ? equals((Color) obj) : false;
+        return (obj instanceof Color) ? equals((Color) obj) : false;
     }
 
     public final boolean equals(Color rhs) {
-	return getR() == rhs.getR() && getG() == rhs.getG() && getB() == rhs.getB() && getAlpha() == rhs.getAlpha();
+        return getR() == rhs.getR() && getG() == rhs.getG() && getB() == rhs.getB() && getAlpha() == rhs.getAlpha();
     }
 
     @Override
     public final int hashCode() {
-	return Arrays.hashCode(new double[] { getHexValue(getR(), getG(), getB()), getAlpha() });
+        return Arrays.hashCode(new double[] { getHexValue(getR(), getG(), getB()), getAlpha() });
     }
 
     /**
      * Gets the integer value of the given rgb value.
      */
     private final int getHexValue(int r, int g, int b) {
-	return ((r << 16) & 0xFF0000) | ((g << 8) & 0xFF00) | (b & 0xFF);
+        return ((r << 16) & 0xFF0000) | ((g << 8) & 0xFF00) | (b & 0xFF);
     }
 }

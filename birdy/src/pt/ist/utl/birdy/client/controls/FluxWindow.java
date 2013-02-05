@@ -22,79 +22,79 @@ public class FluxWindow extends Window {
     Window toolbox = new Window();
 
     private void fillToolbox(Layout l) {
-	for (Strategy s : Strategy.getStrategies()) {
-	    l.addMember(new DetailedMenuItem(workplace, s.getName(), s.getDetails(), s.getIcon(), s));
-	}
+        for (Strategy s : Strategy.getStrategies()) {
+            l.addMember(new DetailedMenuItem(workplace, s.getName(), s.getDetails(), s.getIcon(), s));
+        }
     }
 
     public FluxWindow() {
-	super();
-	setTitle("Fluxo");
-	setWidth(800);
-	setHeight(600);
-	setShowMaximizeButton(true);
-	setCanDragReposition(true);
-	setCanDragResize(true);
-	VLayout layout = new VLayout();
-	layout.setWidth100();
-	layout.setHeight100();
-	setKeepInParentRect(true);
-	ToolStrip toolstrip = new ToolStrip();
-	toolstrip.setWidth100();
+        super();
+        setTitle("Fluxo");
+        setWidth(800);
+        setHeight(600);
+        setShowMaximizeButton(true);
+        setCanDragReposition(true);
+        setCanDragResize(true);
+        VLayout layout = new VLayout();
+        layout.setWidth100();
+        layout.setHeight100();
+        setKeepInParentRect(true);
+        ToolStrip toolstrip = new ToolStrip();
+        toolstrip.setWidth100();
 
-	ToolStripButton toolBoxButton = new ToolStripButton();
-	toolBoxButton.setIcon(Icon.use("block"));
-	toolBoxButton.setTitle("ToolBox");
-	toolBoxButton.addClickHandler(new ClickHandler() {
-	    public void onClick(ClickEvent event) {
-		if (toolbox.isVisible()) {
-		    toolbox.hide();
-		} else {
-		    toolbox.show();
-		}
+        ToolStripButton toolBoxButton = new ToolStripButton();
+        toolBoxButton.setIcon(Icon.use("block"));
+        toolBoxButton.setTitle("ToolBox");
+        toolBoxButton.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent event) {
+                if (toolbox.isVisible()) {
+                    toolbox.hide();
+                } else {
+                    toolbox.show();
+                }
 
-	    }
-	});
+            }
+        });
 
-	toolstrip.addSeparator();
-	toolstrip.addMember(toolBoxButton);
+        toolstrip.addSeparator();
+        toolstrip.addMember(toolBoxButton);
 
-	toolstrip.addSeparator();
+        toolstrip.addSeparator();
 
-	ToolStripButton play = new ToolStripButton();
-	play.setIcon(Icon.use("control"));
-	play.setTitle("Executar");
-	toolstrip.addMember(play);
+        ToolStripButton play = new ToolStripButton();
+        play.setIcon(Icon.use("control"));
+        play.setTitle("Executar");
+        toolstrip.addMember(play);
 
-	layout.addMember(toolstrip);
+        layout.addMember(toolstrip);
 
-	toolbox.setTitle("ToolBox");
-	toolbox.setHeight(400);
-	toolbox.setWidth(200);
-	toolbox.setTop(25);
-	toolbox.setLeft(25);
-	toolbox.setKeepInParentRect(true);
-	toolbox.setIsModal(true);
+        toolbox.setTitle("ToolBox");
+        toolbox.setHeight(400);
+        toolbox.setWidth(200);
+        toolbox.setTop(25);
+        toolbox.setLeft(25);
+        toolbox.setKeepInParentRect(true);
+        toolbox.setIsModal(true);
 
-	VLayout widgetList = new VLayout();
-	widgetList.setWidth100();
-	widgetList.setHeight100();
-	widgetList.setAlign(VerticalAlignment.TOP);
-	fillToolbox(widgetList);
-	toolbox.addItem(widgetList);
-	workplace.setBackgroundImage("/birdy/resources/background.png");
-	layout.addMember(workplace);
-	workplace.addChild(toolbox);
-	addItem(layout);
+        VLayout widgetList = new VLayout();
+        widgetList.setWidth100();
+        widgetList.setHeight100();
+        widgetList.setAlign(VerticalAlignment.TOP);
+        fillToolbox(widgetList);
+        toolbox.addItem(widgetList);
+        workplace.setBackgroundImage("/birdy/resources/background.png");
+        layout.addMember(workplace);
+        workplace.addChild(toolbox);
+        addItem(layout);
 
-	addResizedHandler(new ResizedHandler() {
-	    public void onResized(ResizedEvent event) {
-		workplace.setHeight100();
-		workplace.setWidth100();
+        addResizedHandler(new ResizedHandler() {
+            public void onResized(ResizedEvent event) {
+                workplace.setHeight100();
+                workplace.setWidth100();
 
-	    }
-	});
+            }
+        });
 
-	centerInPage();
+        centerInPage();
     }
 }
