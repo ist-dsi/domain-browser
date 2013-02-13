@@ -10,8 +10,8 @@ public class RelationLink extends DomainObjectLink {
     protected Role role;
 
     public RelationLink(final DomainObject domainObject, final Role role) {
-	super(domainObject);
-	this.role = role;
+        super(domainObject);
+        this.role = role;
     }
 
     @Override

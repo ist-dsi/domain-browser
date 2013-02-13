@@ -30,123 +30,119 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
 
     private class DomainObjectGrid extends GridLayout {
 
-	private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;
 
-	protected abstract class GridPart<T> {
+        protected abstract class GridPart<T> {
 
-	    protected GridPart(final String caption, final int c1, final int r1, final int c2, final int r2,
-		    final SortedSet<T> set, final IndexedContainer container) {
-		final VerticalLayout slotLayout = addGridPart(caption, c1, r1, c2, r2);
-		final Table table = createTable(set.size(), container);
-		for (final T t : set) {
-		    final Object[] o = getValues(t);
-		    final Item item = table.addItem(o[0]);
-		    for (int i = 1; i < o.length; item.getItemProperty(o[i++]).setValue(o[i++]));
-		}
-		slotLayout.addComponent(table);
-	    }
+            protected GridPart(final String caption, final int c1, final int r1, final int c2, final int r2,
+                    final SortedSet<T> set, final IndexedContainer container) {
+                final VerticalLayout slotLayout = addGridPart(caption, c1, r1, c2, r2);
+                final Table table = createTable(set.size(), container);
+                for (final T t : set) {
+                    final Object[] o = getValues(t);
+                    final Item item = table.addItem(o[0]);
+                    for (int i = 1; i < o.length; item.getItemProperty(o[i++]).setValue(o[i++]));
+                }
+                slotLayout.addComponent(table);
+            }
 
-	    protected abstract Object[] getValues(final T t);
+            protected abstract Object[] getValues(final T t);
 
-	}
+        }
 
-	private DomainObjectGrid() {
-	    super(5, 3);
-	    setSpacing(true);
-	    setMargin(true);
-	    setSizeFull();
-	}
+        private DomainObjectGrid() {
+            super(5, 3);
+            setSpacing(true);
+            setMargin(true);
+            setSizeFull();
+        }
 
-	@Override
-	public void attach() {
-	    super.attach();
-	    addChart();
-	    addValueSlots();
-	    addRelationSlots();
-	    addRelationSets();
-	}
+        @Override
+        public void attach() {
+            super.attach();
+            addChart();
+            addValueSlots();
+            addRelationSlots();
+            addRelationSets();
+        }
 
-	private void addValueSlots() {
-	    new GridPart<Slot>("Value Slots", 1, 0, 4, 0, 
-		    DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
-		@Override
-		protected Object[] getValues(final Slot slot) {
-		    final String name = slot.getName();
-		    return new Object[] { name, "Slot", name, "Value", 
-			    getSlotValue(slot), "Type", slot.getTypeName() };
-		}
-	    };
-	}
+        private void addValueSlots() {
+            new GridPart<Slot>("Value Slots", 1, 0, 4, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
+                @Override
+                protected Object[] getValues(final Slot slot) {
+                    final String name = slot.getName();
+                    return new Object[] { name, "Slot", name, "Value", getSlotValue(slot), "Type", slot.getTypeName() };
+                }
+            };
+        }
 
-	private void addRelationSlots() {
-	    new GridPart<Role>("Relation Slots", 1, 1, 4, 1,
-		    DomainUtils.getRelationSlots(domainClass), new SlotLinkTypeContainer()) {
-		@Override
-		protected Object[] getValues(final Role role) {
-		    final String name = role.getName();
-		    return new Object[] { name, "Slot", name, "Value", 
-			    new RoleLink(domainObject, role), "Type", role.getType().getFullName() };
-		}
-	    };
-	}
+        private void addRelationSlots() {
+            new GridPart<Role>("Relation Slots", 1, 1, 4, 1, DomainUtils.getRelationSlots(domainClass),
+                    new SlotLinkTypeContainer()) {
+                @Override
+                protected Object[] getValues(final Role role) {
+                    final String name = role.getName();
+                    return new Object[] { name, "Slot", name, "Value", new RoleLink(domainObject, role), "Type",
+                            role.getType().getFullName() };
+                }
+            };
+        }
 
-	private void addRelationSets() {
-	    new GridPart<Role>("Relation Sets", 1, 2, 4, 2,
-		    DomainUtils.getRelationSets(domainClass), new LinkTypeContainer()) {
-		@Override
-		protected Object[] getValues(final Role role) {
-		    return new Object[] { role.getName(), "Value",
-			    new RelationLink(domainObject, role), "Type", role.getType().getFullName() };
-		}
-	    };
-	}
+        private void addRelationSets() {
+            new GridPart<Role>("Relation Sets", 1, 2, 4, 2, DomainUtils.getRelationSets(domainClass), new LinkTypeContainer()) {
+                @Override
+                protected Object[] getValues(final Role role) {
+                    return new Object[] { role.getName(), "Value", new RelationLink(domainObject, role), "Type",
+                            role.getType().getFullName() };
+                }
+            };
+        }
 
-	private void addChart() {
-	    final OrganizationalChart oc = new OrganizationalChart();
-	    oc.setOption("size", "medium");
-	    oc.setOption("allowCollapse", false);
-	    oc.setHeight(100, UNITS_PERCENTAGE);
-	    oc.setWidth(100, UNITS_PERCENTAGE);
-	    for (DomainClass dc = domainClass; dc != null; dc = (DomainClass) dc.getSuperclass()) {
-		final DomainClass parent = (DomainClass) dc.getSuperclass();
-		oc.add(dc.getName(), parent == null ? "" : parent.getName(), dc.getFullName());
-	    }
-	    oc.setSizeFull();
-	    oc.setVisible(true);
-	    addComponent(oc, 0, 0, 0, 2);
-	    setComponentAlignment(oc, Alignment.TOP_LEFT);
-	}
+        private void addChart() {
+            final OrganizationalChart oc = new OrganizationalChart();
+            oc.setOption("size", "medium");
+            oc.setOption("allowCollapse", false);
+            oc.setHeight(100, UNITS_PERCENTAGE);
+            oc.setWidth(100, UNITS_PERCENTAGE);
+            for (DomainClass dc = domainClass; dc != null; dc = (DomainClass) dc.getSuperclass()) {
+                final DomainClass parent = (DomainClass) dc.getSuperclass();
+                oc.add(dc.getName(), parent == null ? "" : parent.getName(), dc.getFullName());
+            }
+            oc.setSizeFull();
+            oc.setVisible(true);
+            addComponent(oc, 0, 0, 0, 2);
+            setComponentAlignment(oc, Alignment.TOP_LEFT);
+        }
 
-	private VerticalLayout addGridPart(final String label, int i, int j, int k, int l) {
-	    final VerticalLayout layout = new VerticalLayout();
-	    layout.addComponent(new Label("<h4>" + label + "</h4>", Label.CONTENT_XHTML));
-	    addComponent(layout, i, j, k, l);
-	    setComponentAlignment(layout, Alignment.TOP_CENTER);
-	    return layout;
-	}
+        private VerticalLayout addGridPart(final String label, int i, int j, int k, int l) {
+            final VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h4>" + label + "</h4>", Label.CONTENT_XHTML));
+            addComponent(layout, i, j, k, l);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+            return layout;
+        }
 
     }
 
     private final DomainClass domainClass;
 
     public DomainObjectViewer(final DomainObject domainObject) {
-	super(domainObject);
-	final DomainModel domainModel = FenixFramework.getDomainModel();
-	domainClass = domainModel.findClass(domainObject.getClass().getName());
+        super(domainObject);
+        final DomainModel domainModel = FenixFramework.getDomainModel();
+        domainClass = domainModel.findClass(domainObject.getClass().getName());
     }
 
     @Override
     public void attach() {
-	super.attach();
-	final DomainObjectGrid grid = new DomainObjectGrid();
-	addComponent(grid);
-	setComponentAlignment(grid, Alignment.MIDDLE_CENTER);
+        super.attach();
+        final DomainObjectGrid grid = new DomainObjectGrid();
+        addComponent(grid);
+        setComponentAlignment(grid, Alignment.MIDDLE_CENTER);
     }
 
     private String getSlotValue(final Slot slot) {
-	final Object value = DomainUtils.getSlot(domainObject, slot);
-	return value == null ? "null" : value.toString();
+        final Object value = DomainUtils.getSlot(domainObject, slot);
+        return value == null ? "null" : value.toString();
     }
-
 
 }

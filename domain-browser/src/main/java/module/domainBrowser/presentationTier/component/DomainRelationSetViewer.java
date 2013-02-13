@@ -15,20 +15,20 @@ public class DomainRelationSetViewer extends BasicDomainObjectViewer {
     protected final Set<DomainObject> relationSet;
 
     public DomainRelationSetViewer(final DomainObject domainObject, final Set<DomainObject> relationSet) {
-	super(domainObject);
-	this.relationSet = relationSet;
+        super(domainObject);
+        this.relationSet = relationSet;
     }
 
     @Override
     public void attach() {
-	super.attach();
-	final Table table = createTable(relationSet.size(), new LinkTypeContainer());
-	for (final DomainObject domainObject : relationSet) {
-	    final Item item = table.addItem(domainObject.getExternalId());
-	    item.getItemProperty("Value").setValue(new DomainObjectLink(domainObject));
-	    item.getItemProperty("Type").setValue(domainObject.getClass().getName());
-	}
-	addComponent(table);
+        super.attach();
+        final Table table = createTable(relationSet.size(), new LinkTypeContainer());
+        for (final DomainObject domainObject : relationSet) {
+            final Item item = table.addItem(domainObject.getExternalId());
+            item.getItemProperty("Value").setValue(new DomainObjectLink(domainObject));
+            item.getItemProperty("Type").setValue(domainObject.getClass().getName());
+        }
+        addComponent(table);
     }
 
 }

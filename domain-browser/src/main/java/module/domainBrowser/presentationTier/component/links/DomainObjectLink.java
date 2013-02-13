@@ -12,7 +12,7 @@ public class DomainObjectLink extends Link {
     protected DomainObject domainObject;
 
     public DomainObjectLink(final DomainObject domainObject) {
-	this.domainObject = domainObject;
+        this.domainObject = domainObject;
     }
 
     @Override
@@ -25,11 +25,11 @@ public class DomainObjectLink extends Link {
     }
 
     protected String caption() {
-	return domainObject.getExternalId();
+        return domainObject.getExternalId();
     }
 
     protected String url() {
-	return "vaadinContext.do?method=forwardToVaadin#DomainBrowser?externalId=" + domainObject.getExternalId();
+        return "vaadinContext.do?method=forwardToVaadin#DomainBrowser?externalId=" + domainObject.getExternalId();
     }
 
 }

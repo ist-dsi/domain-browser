@@ -9,7 +9,7 @@ public class RoleLink extends DomainObjectLink {
     private static final long serialVersionUID = 1L;
 
     public RoleLink(final DomainObject domainObject, final Role role) {
-	super(DomainUtils.getRelationSlot(domainObject, role));
+        super(DomainUtils.getRelationSlot(domainObject, role));
     }
 
 }
