@@ -12,6 +12,11 @@ public class BasicDomainObjectViewer extends VerticalLayout {
 
     private static final long serialVersionUID = 1L;
 
+    protected static final String VALUE_COLUMN = "Value";
+    protected static final String SLOT_COLUMN = "Slot Name";
+    protected static final String PLAYS_ROLE_COLUMN = "PlaysRole Name";
+    protected static final String TYPE_COLUMN = "Type";
+
     protected final DomainObject domainObject;
 
     public BasicDomainObjectViewer(final DomainObject domainObject) {
@@ -43,13 +48,12 @@ public class BasicDomainObjectViewer extends VerticalLayout {
     }
 
     protected class SlotValueTypeContainer extends IndexedContainer {
-
         private static final long serialVersionUID = 1L;
 
         protected SlotValueTypeContainer() {
-            addContainerProperty("Slot", String.class, null);
-            addContainerProperty("Value", String.class, null);
-            addContainerProperty("Type", String.class, null);
+            addContainerProperty(SLOT_COLUMN, String.class, null);
+            addContainerProperty(VALUE_COLUMN, String.class, null);
+            addContainerProperty(TYPE_COLUMN, String.class, null);
         }
 
     }
@@ -59,9 +63,9 @@ public class BasicDomainObjectViewer extends VerticalLayout {
         private static final long serialVersionUID = 1L;
 
         protected SlotLinkTypeContainer() {
-            addContainerProperty("Slot", String.class, null);
-            addContainerProperty("Value", Link.class, null);
-            addContainerProperty("Type", String.class, null);
+            addContainerProperty(SLOT_COLUMN, String.class, null);
+            addContainerProperty(VALUE_COLUMN, Link.class, null);
+            addContainerProperty(TYPE_COLUMN, String.class, null);
         }
 
     }
@@ -71,8 +75,8 @@ public class BasicDomainObjectViewer extends VerticalLayout {
         private static final long serialVersionUID = 1L;
 
         protected LinkTypeContainer() {
-            addContainerProperty("Value", Link.class, null);
-            addContainerProperty("Type", String.class, null);
+            addContainerProperty(PLAYS_ROLE_COLUMN, Link.class, null);
+            addContainerProperty(TYPE_COLUMN, String.class, null);
         }
 
     }
