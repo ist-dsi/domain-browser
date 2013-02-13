@@ -41,7 +41,9 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
                 for (final T t : set) {
                     final Object[] o = getValues(t);
                     final Item item = table.addItem(o[0]);
-                    for (int i = 1; i < o.length; item.getItemProperty(o[i++]).setValue(o[i++]));
+                    for (int i = 1; i < o.length; i++) {
+                        item.getItemProperty(o[i]).setValue(o[i]);
+                    }
                 }
                 slotLayout.addComponent(table);
             }
@@ -71,7 +73,7 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
                 @Override
                 protected Object[] getValues(final Slot slot) {
                     final String name = slot.getName();
-                    return new Object[] { name, "Slot", name, "Value", getSlotValue(slot), "Type", slot.getTypeName() };
+                    return new Object[] { name, "Slot Name", name, "Value", getSlotValue(slot), "Type", slot.getTypeName() };
                 }
             };
         }
@@ -82,17 +84,17 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
                 @Override
                 protected Object[] getValues(final Role role) {
                     final String name = role.getName();
-                    return new Object[] { name, "Slot", name, "Value", new RoleLink(domainObject, role), "Type",
+                    return new Object[] { name, "Slot Name", name, "ID", new RoleLink(domainObject, role), "Type",
                             role.getType().getFullName() };
                 }
             };
         }
 
         private void addRelationSets() {
-            new GridPart<Role>("Relation Sets", 1, 2, 4, 2, DomainUtils.getRelationSets(domainClass), new LinkTypeContainer()) {
+            new GridPart<Role>("Relation Lists", 1, 2, 4, 2, DomainUtils.getRelationSets(domainClass), new LinkTypeContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
-                    return new Object[] { role.getName(), "Value", new RelationLink(domainObject, role), "Type",
+                    return new Object[] { role.getName(), "PlaysRole Name", new RelationLink(domainObject, role), "Type",
                             role.getType().getFullName() };
                 }
             };

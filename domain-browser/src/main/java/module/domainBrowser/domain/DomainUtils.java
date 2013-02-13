@@ -37,7 +37,7 @@ public class DomainUtils {
     }
 
     public static Object getSlot(final DomainObject domainObject, final Slot slot) {
-        final Method method = method(domainObject, slot);
+        final Method method = getMethod(domainObject, slot);
         if (method != null) {
             try {
                 return method.invoke(domainObject);
@@ -53,7 +53,7 @@ public class DomainUtils {
     }
 
     public static DomainObject getRelationSlot(final DomainObject domainObject, final Role role) {
-        final Method method = method(domainObject, role);
+        final Method method = getMethod(domainObject, role);
         if (method != null) {
             try {
                 return (DomainObject) method.invoke(domainObject);
@@ -69,7 +69,7 @@ public class DomainUtils {
     }
 
     public static Set<DomainObject> getRelationSet(final DomainObject domainObject, final String slotName) {
-        final Method method = method(domainObject, getterMethod(slotName));
+        final Method method = getMethod(domainObject, getterMethod(slotName));
         if (method != null) {
             try {
                 return (Set<DomainObject>) method.invoke(domainObject);
@@ -86,7 +86,7 @@ public class DomainUtils {
 
     @SuppressWarnings("unchecked")
     public static Set<DomainObject> getRelationSet(final DomainObject domainObject, final Role role) {
-        final Method method = method(domainObject, role);
+        final Method method = getMethod(domainObject, role);
         if (method != null) {
             try {
                 return (Set<DomainObject>) method.invoke(domainObject);
@@ -101,15 +101,15 @@ public class DomainUtils {
         return null;
     }
 
-    protected static Method method(final DomainObject domainObject, final Slot slot) {
-        return method(domainObject, getterMethod(slot));
+    protected static Method getMethod(final DomainObject domainObject, final Slot slot) {
+        return getMethod(domainObject, getterMethod(slot));
     }
 
-    protected static Method method(final DomainObject domainObject, final Role role) {
-        return method(domainObject, getterMethod(role));
+    protected static Method getMethod(final DomainObject domainObject, final Role role) {
+        return getMethod(domainObject, getterMethod(role));
     }
 
-    protected static Method method(final DomainObject domainObject, final String slotName) {
+    protected static Method getMethod(final DomainObject domainObject, final String slotName) {
         if (domainObject != null && slotName != null && !slotName.isEmpty()) {
             final Class<? extends DomainObject> clazz = domainObject.getClass();
             try {
