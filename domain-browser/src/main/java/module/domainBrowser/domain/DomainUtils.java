@@ -27,9 +27,25 @@ public class DomainUtils {
     public static final Comparator<Role> RELATION_SLOT_COMPARATOR = new Comparator<Role>() {
         @Override
         public int compare(final Role r1, final Role r2) {
-            return r1.getName().compareTo(r2.getName());
+            return compareRoleNames(r1, r2);
         }
     };
+
+    private static int compareRoleNames(Role r1, Role r2) {
+        if ((r1.getName() == null) && (r2.getName() != null)) {
+            return -1;
+        }
+        if ((r1.getName() != null) && (r2.getName() == null)) {
+            return 1;
+        }
+        if ((r1.getName() == null) && (r2.getName() == null)) {
+            if (r1.getOtherRole().getName() == null || r2.getOtherRole().getName() == null) {
+                throw new RuntimeException("Found a domain relation without any playsRole?!");
+            }
+            return compareRoleNames(r1.getOtherRole(), r2.getOtherRole());
+        }
+        return r1.getName().compareTo(r2.getName());
+    }
 
     public static DomainObject readDomainObject(final String externalId) {
         return externalId != null && !externalId.isEmpty() && StringUtils.isNumeric(externalId) ? AbstractDomainObject
