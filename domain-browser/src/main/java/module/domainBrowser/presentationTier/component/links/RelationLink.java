@@ -15,13 +15,13 @@ public class RelationLink extends DomainObjectLink {
     }
 
     @Override
-    protected String caption() {
+    protected String getObjectDescription() {
         return role.getName();
     }
 
     @Override
-    protected String url() {
-        return super.url() + "&relationSet=" + role.getName();
+    public String getUrl() {
+        return super.getUrl() + "&relationSet=" + role.getName();
     }
 
 }

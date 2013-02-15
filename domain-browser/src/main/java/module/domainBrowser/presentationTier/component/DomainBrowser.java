@@ -29,12 +29,12 @@ import java.util.Set;
 
 import module.domainBrowser.domain.DomainUtils;
 import module.domainBrowser.presentationTier.component.funStuff.Quote;
-import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
-import pt.ist.bennu.core.domain.RoleType;
-import pt.ist.bennu.core.domain.User;
 
 import org.apache.commons.lang.StringUtils;
 
+import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
+import pt.ist.bennu.core.domain.RoleType;
+import pt.ist.bennu.core.domain.User;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.pstm.AbstractDomainObject;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
@@ -165,7 +165,8 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
                 final String relationSet = args.get("relationSet");
                 final Set<DomainObject> set = DomainUtils.getRelationSet(domainObject, relationSet);
                 domainObjectViewer =
-                        set == null ? new DomainObjectViewer(domainObject) : new DomainRelationSetViewer(domainObject, set);
+                        set == null ? new DomainObjectViewer(domainObject) : new DomainRelationSetViewer(domainObject, set,
+                                relationSet);
             }
         }
     }

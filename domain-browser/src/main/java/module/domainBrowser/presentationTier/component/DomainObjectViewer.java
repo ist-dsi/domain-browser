@@ -73,14 +73,15 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
                 @Override
                 protected Object[] getValues(final Slot slot) {
                     final String name = slot.getName();
-                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, getSlotValue(slot), TYPE_COLUMN, slot.getTypeName() };
+                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, getSlotValue(slot), TYPE_COLUMN,
+                            slot.getTypeName() };
                 }
             };
         }
 
         private void addRelationSlots() {
             new GridPart<Role>("Relation Slots", 1, 1, 4, 1, DomainUtils.getRelationSlots(domainClass),
-                    new SlotLinkTypeContainer()) {
+                    new SlotDomainObjectContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
                     final String name = role.getName();
@@ -91,7 +92,8 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
         }
 
         private void addRelationSets() {
-            new GridPart<Role>("Relation Lists", 1, 2, 4, 2, DomainUtils.getRelationSets(domainClass), new LinkTypeContainer()) {
+            new GridPart<Role>("Relation Lists", 1, 2, 4, 2, DomainUtils.getRelationSets(domainClass),
+                    new RelationListLinkContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
                     return new Object[] { role.getName(), PLAYS_ROLE_COLUMN, new RelationLink(domainObject, role), TYPE_COLUMN,

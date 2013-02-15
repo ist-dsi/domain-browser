@@ -6,6 +6,7 @@ import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
 import pt.ist.fenixframework.DomainObject;
 
 import com.vaadin.data.Item;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 
 public class DomainRelationSetViewer extends BasicDomainObjectViewer {
@@ -14,18 +15,23 @@ public class DomainRelationSetViewer extends BasicDomainObjectViewer {
 
     protected final Set<DomainObject> relationSet;
 
-    public DomainRelationSetViewer(final DomainObject domainObject, final Set<DomainObject> relationSet) {
+    protected final String playsRole;
+
+    public DomainRelationSetViewer(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
         super(domainObject);
         this.relationSet = relationSet;
+        this.playsRole = playsRole;
     }
 
     @Override
     public void attach() {
         super.attach();
-        final Table table = createTable(relationSet.size(), new LinkTypeContainer());
+        addComponent(new Label("Relation of playsRole: " + playsRole));
+
+        final Table table = createTable(relationSet.size(), new RelationListContentContainer());
         for (final DomainObject domainObject : relationSet) {
             final Item item = table.addItem(domainObject.getExternalId());
-            item.getItemProperty(PLAYS_ROLE_COLUMN).setValue(new DomainObjectLink(domainObject));
+            item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject));
             item.getItemProperty(TYPE_COLUMN).setValue(domainObject.getClass().getName());
         }
         addComponent(table);
