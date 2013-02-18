@@ -1,10 +1,10 @@
 package module.domainBrowser.presentationTier.component;
 
+import java.util.Set;
 import java.util.SortedSet;
 
 import module.domainBrowser.domain.DomainUtils;
-import module.domainBrowser.presentationTier.component.links.RelationLink;
-import module.domainBrowser.presentationTier.component.links.RoleLink;
+import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
 
 import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
@@ -14,26 +14,25 @@ import pt.ist.fenixframework.FenixFramework;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.BaseTheme;
 
 import dml.DomainClass;
 import dml.DomainModel;
 import dml.Role;
 import dml.Slot;
 
+@SuppressWarnings("serial")
 public class DomainObjectViewer extends BasicDomainObjectViewer {
-
-    private static final long serialVersionUID = 1L;
 
     private class DomainObjectGrid extends GridLayout {
 
-        private static final long serialVersionUID = 1L;
-
         protected abstract class GridPart<T> {
-
             protected GridPart(final String caption, final int col1, final int row1, final int col2, final int row2,
                     final SortedSet<T> set, final IndexedContainer container) {
                 final VerticalLayout slotLayout = addGridPart(caption, col1, row1, col2, row2);
@@ -53,7 +52,7 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
         }
 
         private DomainObjectGrid() {
-            super(5, 3);
+            super(5, 5);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
@@ -66,6 +65,23 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
             addValueSlots();
             addRelationSlots();
             addRelationSets();
+            hideRelationContents();
+        }
+
+        private void addChart() {
+            final OrganizationalChart oc = new OrganizationalChart();
+            oc.setOption("size", "medium");
+            oc.setOption("allowCollapse", false);
+            oc.setHeight(100, UNITS_PERCENTAGE);
+            oc.setWidth(100, UNITS_PERCENTAGE);
+            for (DomainClass dc = domainClass; dc != null; dc = (DomainClass) dc.getSuperclass()) {
+                final DomainClass parent = (DomainClass) dc.getSuperclass();
+                oc.add(dc.getName(), parent == null ? "" : parent.getName(), dc.getFullName());
+            }
+            oc.setSizeFull();
+            oc.setVisible(true);
+            addComponent(oc, 0, 0, 0, 1);
+            setComponentAlignment(oc, Alignment.TOP_LEFT);
         }
 
         private void addValueSlots() {
@@ -85,37 +101,51 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
                 @Override
                 protected Object[] getValues(final Role role) {
                     final String name = role.getName();
-                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, new RoleLink(domainObject, role), TYPE_COLUMN,
-                            role.getType().getFullName() };
+                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, new DomainObjectLink(domainObject, role),
+                            TYPE_COLUMN, role.getType().getFullName() };
                 }
             };
         }
 
         private void addRelationSets() {
-            new GridPart<Role>("Relation Lists", 1, 2, 4, 2, DomainUtils.getRelationSets(domainClass),
-                    new RelationListLinkContainer()) {
+            new GridPart<Role>("Relation Lists", 0, 2, 4, 2, DomainUtils.getRelationSets(domainClass),
+                    new RelationListButtonContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
-                    return new Object[] { role.getName(), PLAYS_ROLE_COLUMN, new RelationLink(domainObject, role), TYPE_COLUMN,
+                    Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
+                        @Override
+                        public void buttonClick(ClickEvent event) {
+                            showRelationContents(domainObject, DomainUtils.getRelationSet(domainObject, role.getName()),
+                                    role.getName());
+                        }
+                    });
+                    viewRelationButton.addStyleName(BaseTheme.BUTTON_LINK);
+
+                    return new Object[] { role.getName(), PLAYS_ROLE_COLUMN, viewRelationButton, TYPE_COLUMN,
                             role.getType().getFullName() };
                 }
             };
         }
 
-        private void addChart() {
-            final OrganizationalChart oc = new OrganizationalChart();
-            oc.setOption("size", "medium");
-            oc.setOption("allowCollapse", false);
-            oc.setHeight(100, UNITS_PERCENTAGE);
-            oc.setWidth(100, UNITS_PERCENTAGE);
-            for (DomainClass dc = domainClass; dc != null; dc = (DomainClass) dc.getSuperclass()) {
-                final DomainClass parent = (DomainClass) dc.getSuperclass();
-                oc.add(dc.getName(), parent == null ? "" : parent.getName(), dc.getFullName());
+        private void hideRelationContents() {
+            Label label = (Label) getComponent(0, 3);
+            if (label == null) {
+                label = new Label();
+                addComponent(label, 0, 3, 4, 3);
             }
-            oc.setSizeFull();
-            oc.setVisible(true);
-            addComponent(oc, 0, 0, 0, 2);
-            setComponentAlignment(oc, Alignment.TOP_LEFT);
+            label.setCaption("Pick a relation from the table above to view its contents.");
+
+            // remove the DomainRelationSetViewer
+            removeComponent(0, 4);
+        }
+
+        private void showRelationContents(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
+            Label label = (Label) getComponent(0, 3);
+            label.setCaption("Relation of playsRole: " + playsRole);
+
+            removeComponent(0, 4);
+            DomainRelationListViewer relationViewer = new DomainRelationListViewer(domainObject, relationSet, playsRole);
+            addComponent(relationViewer, 0, 4, 4, 4);
         }
 
         private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {

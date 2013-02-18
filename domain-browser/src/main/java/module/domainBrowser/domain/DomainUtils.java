@@ -84,25 +84,9 @@ public class DomainUtils {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     public static Set<DomainObject> getRelationSet(final DomainObject domainObject, final String slotName) {
         final Method method = getMethod(domainObject, getterMethod(slotName));
-        if (method != null) {
-            try {
-                return (Set<DomainObject>) method.invoke(domainObject);
-            } catch (final IllegalAccessException e) {
-                throw new Error(e);
-            } catch (final IllegalArgumentException e) {
-                throw new Error(e);
-            } catch (final InvocationTargetException e) {
-                throw new Error(e);
-            }
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Set<DomainObject> getRelationSet(final DomainObject domainObject, final Role role) {
-        final Method method = getMethod(domainObject, role);
         if (method != null) {
             try {
                 return (Set<DomainObject>) method.invoke(domainObject);

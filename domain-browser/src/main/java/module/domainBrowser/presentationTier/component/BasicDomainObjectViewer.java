@@ -1,17 +1,16 @@
 package module.domainBrowser.presentationTier.component;
 
-import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
 import pt.ist.fenixframework.DomainObject;
 
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
+@SuppressWarnings("serial")
 public class BasicDomainObjectViewer extends VerticalLayout {
-
-    private static final long serialVersionUID = 1L;
 
     protected static final String VALUE_COLUMN = "Value";
     protected static final String SLOT_COLUMN = "Slot Name";
@@ -31,7 +30,12 @@ public class BasicDomainObjectViewer extends VerticalLayout {
     }
 
     protected void addTitle() {
-        addComponent(new DomainObjectLink(domainObject, true));
+        final StringBuilder builder = new StringBuilder("<h3>");
+        builder.append(domainObject.getClass().getName());
+        builder.append(": ");
+        builder.append(domainObject.getExternalId());
+        builder.append("</h3>");
+        addComponent(new Label(builder.toString(), Label.CONTENT_XHTML));
     }
 
     protected Table createTable(final int size, final IndexedContainer container) {
@@ -44,48 +48,32 @@ public class BasicDomainObjectViewer extends VerticalLayout {
     }
 
     protected class SlotValueTypeContainer extends IndexedContainer {
-        private static final long serialVersionUID = 1L;
-
         protected SlotValueTypeContainer() {
             addContainerProperty(SLOT_COLUMN, String.class, null);
             addContainerProperty(VALUE_COLUMN, String.class, null);
             addContainerProperty(TYPE_COLUMN, String.class, null);
         }
-
     }
 
     protected class SlotDomainObjectContainer extends IndexedContainer {
-
-        private static final long serialVersionUID = 1L;
-
         protected SlotDomainObjectContainer() {
             addContainerProperty(SLOT_COLUMN, String.class, null);
             addContainerProperty(VALUE_COLUMN, Link.class, null);
             addContainerProperty(TYPE_COLUMN, String.class, null);
         }
-
     }
 
-    protected class RelationListLinkContainer extends IndexedContainer {
-
-        private static final long serialVersionUID = 1L;
-
-        protected RelationListLinkContainer() {
-            addContainerProperty(PLAYS_ROLE_COLUMN, Link.class, null);
+    protected class RelationListButtonContainer extends IndexedContainer {
+        protected RelationListButtonContainer() {
+            addContainerProperty(PLAYS_ROLE_COLUMN, Button.class, null);
             addContainerProperty(TYPE_COLUMN, String.class, null);
         }
-
     }
 
     protected class RelationListContentContainer extends IndexedContainer {
-
-        private static final long serialVersionUID = 1L;
-
         protected RelationListContentContainer() {
             addContainerProperty(VALUE_COLUMN, Link.class, null);
             addContainerProperty(TYPE_COLUMN, String.class, null);
         }
-
     }
-
 }

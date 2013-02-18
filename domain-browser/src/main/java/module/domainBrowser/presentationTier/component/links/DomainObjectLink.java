@@ -1,9 +1,12 @@
 package module.domainBrowser.presentationTier.component.links;
 
+import module.domainBrowser.domain.DomainUtils;
 import pt.ist.fenixframework.DomainObject;
 
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Link;
+
+import dml.Role;
 
 public class DomainObjectLink extends Link {
 
@@ -11,15 +14,12 @@ public class DomainObjectLink extends Link {
 
     protected DomainObject domainObject;
 
-    private boolean showClassName = false;
-
     public DomainObjectLink(final DomainObject domainObject) {
-        this(domainObject, false);
+        this.domainObject = domainObject;
     }
 
-    public DomainObjectLink(final DomainObject domainObject, boolean showClassName) {
-        this.domainObject = domainObject;
-        this.showClassName = showClassName;
+    public DomainObjectLink(final DomainObject domainObject, final Role role) {
+        this(DomainUtils.getRelationSlot(domainObject, role));
     }
 
     @Override
@@ -32,13 +32,7 @@ public class DomainObjectLink extends Link {
     }
 
     protected String getObjectDescription() {
-        String description = "";
-        if (showClassName) {
-            description += domainObject.getClass().getName();
-            description += ": ";
-        }
-        description += domainObject.getExternalId();
-        return description;
+        return domainObject.getExternalId();
     }
 
     public String getUrl() {

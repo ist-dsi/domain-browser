@@ -25,7 +25,6 @@
 package module.domainBrowser.presentationTier.component;
 
 import java.util.Map;
-import java.util.Set;
 
 import module.domainBrowser.domain.DomainUtils;
 import module.domainBrowser.presentationTier.component.funStuff.Quote;
@@ -55,7 +54,7 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-@EmbeddedComponent(path = { "DomainBrowser" }, args = { "externalId", "relationSet" })
+@EmbeddedComponent(path = { "DomainBrowser" }, args = { "externalId" })
 /**
  * 
  * @author Luis Cruz
@@ -162,13 +161,8 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
             final String externalId = args.get("externalId");
             final DomainObject domainObject = DomainUtils.readDomainObject(externalId);
             if (domainObject != null) {
-                final String relationSet = args.get("relationSet");
-                final Set<DomainObject> set = DomainUtils.getRelationSet(domainObject, relationSet);
-                domainObjectViewer =
-                        set == null ? new DomainObjectViewer(domainObject) : new DomainRelationSetViewer(domainObject, set,
-                                relationSet);
+                domainObjectViewer = new DomainObjectViewer(domainObject);
             }
         }
     }
-
 }

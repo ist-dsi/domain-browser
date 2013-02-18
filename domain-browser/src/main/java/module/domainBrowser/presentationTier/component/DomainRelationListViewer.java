@@ -6,10 +6,9 @@ import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
 import pt.ist.fenixframework.DomainObject;
 
 import com.vaadin.data.Item;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 
-public class DomainRelationSetViewer extends BasicDomainObjectViewer {
+public class DomainRelationListViewer extends BasicDomainObjectViewer {
 
     private static final long serialVersionUID = 1L;
 
@@ -17,16 +16,21 @@ public class DomainRelationSetViewer extends BasicDomainObjectViewer {
 
     protected final String playsRole;
 
-    public DomainRelationSetViewer(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
+    public DomainRelationListViewer(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
         super(domainObject);
         this.relationSet = relationSet;
         this.playsRole = playsRole;
     }
 
     @Override
+    protected void addTitle() {
+        // Do nothing. This DomainRelationListViewer is meant to be viewed inside the DomainObjectViewer,
+        // which already has a title.
+    }
+
+    @Override
     public void attach() {
         super.attach();
-        addComponent(new Label("Relation of playsRole: " + playsRole));
 
         final Table table = createTable(relationSet.size(), new RelationListContentContainer());
         for (final DomainObject domainObject : relationSet) {
