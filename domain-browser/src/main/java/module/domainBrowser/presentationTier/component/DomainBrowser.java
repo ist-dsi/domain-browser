@@ -86,7 +86,7 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
                 final DomainObject domainObject = AbstractDomainObject.fromExternalId(value);
                 if (domainObject == null) {
                 } else {
-                    domainObjectViewer = new DomainObjectViewer(domainObject);
+                    domainObjectViewer = new DomainObjectView(domainObject);
                     layout.addComponent(domainObjectViewer);
                 }
             }
@@ -161,7 +161,7 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
             final String externalId = args.get("externalId");
             final DomainObject domainObject = DomainUtils.readDomainObject(externalId);
             if (domainObject != null) {
-                domainObjectViewer = new DomainObjectViewer(domainObject);
+                domainObjectViewer = new DomainObjectView(domainObject);
             }
         }
     }

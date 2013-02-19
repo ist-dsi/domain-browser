@@ -10,7 +10,7 @@ import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class BasicDomainObjectViewer extends VerticalLayout {
+public class BasicDomainObjectView extends VerticalLayout {
 
     protected static final String VALUE_COLUMN = "Value";
     protected static final String SLOT_COLUMN = "Slot Name";
@@ -19,7 +19,7 @@ public class BasicDomainObjectViewer extends VerticalLayout {
 
     protected final DomainObject domainObject;
 
-    public BasicDomainObjectViewer(final DomainObject domainObject) {
+    public BasicDomainObjectView(final DomainObject domainObject) {
         this.domainObject = domainObject;
     }
 

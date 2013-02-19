@@ -28,7 +28,7 @@ import dml.Role;
 import dml.Slot;
 
 @SuppressWarnings("serial")
-public class DomainObjectViewer extends BasicDomainObjectViewer {
+public class DomainObjectView extends BasicDomainObjectView {
 
     private class DomainObjectGrid extends GridLayout {
 
@@ -52,7 +52,7 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
         }
 
         private DomainObjectGrid() {
-            super(5, 5);
+            super(5, 4);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
@@ -128,24 +128,15 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
         }
 
         private void hideRelationContents() {
-            Label label = (Label) getComponent(0, 3);
-            if (label == null) {
-                label = new Label();
-                addComponent(label, 0, 3, 4, 3);
-            }
-            label.setCaption("Pick a relation from the table above to view its contents.");
-
-            // remove the DomainRelationSetViewer
-            removeComponent(0, 4);
+            removeComponent(0, 3);
+            Label label = new Label("Pick a relation from the table above to view its contents");
+            addComponent(label, 0, 3, 4, 3);
         }
 
         private void showRelationContents(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
-            Label label = (Label) getComponent(0, 3);
-            label.setCaption("Relation of playsRole: " + playsRole);
-
-            removeComponent(0, 4);
-            DomainRelationListViewer relationViewer = new DomainRelationListViewer(domainObject, relationSet, playsRole);
-            addComponent(relationViewer, 0, 4, 4, 4);
+            removeComponent(0, 3);
+            DomainRelationListView relationViewer = new DomainRelationListView(domainObject, relationSet, playsRole);
+            addComponent(relationViewer, 0, 3, 4, 3);
         }
 
         private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
@@ -160,7 +151,7 @@ public class DomainObjectViewer extends BasicDomainObjectViewer {
 
     private final DomainClass domainClass;
 
-    public DomainObjectViewer(final DomainObject domainObject) {
+    public DomainObjectView(final DomainObject domainObject) {
         super(domainObject);
         final DomainModel domainModel = FenixFramework.getDomainModel();
         domainClass = domainModel.findClass(domainObject.getClass().getName());
