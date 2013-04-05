@@ -1,5 +1,6 @@
 package module.domainBrowser.presentationTier.component;
 
+import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -10,12 +11,15 @@ import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.pstm.consistencyPredicates.ConsistencyPredicateSystem;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
@@ -52,10 +56,18 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private DomainObjectGrid() {
-            super(5, 4);
+            super(6, 40);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
+        }
+
+        private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
+            final VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h4>" + label + "</h4>", Label.CONTENT_XHTML));
+            addComponent(layout, col1, row1, col2, row2);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+            return layout;
         }
 
         @Override
@@ -66,6 +78,7 @@ public class DomainObjectView extends BasicDomainObjectView {
             addRelationSlots();
             addRelationSets();
             hideRelationContents();
+            addConsistencyPredicates();
         }
 
         private void addChart() {
@@ -85,7 +98,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addValueSlots() {
-            new GridPart<Slot>("Value Slots", 1, 0, 4, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
+            new GridPart<Slot>("Value Slots", 1, 0, 5, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
                 @Override
                 protected Object[] getValues(final Slot slot) {
                     final String name = slot.getName();
@@ -96,7 +109,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addRelationSlots() {
-            new GridPart<Role>("Relation Slots", 1, 1, 4, 1, DomainUtils.getRelationSlots(domainClass),
+            new GridPart<Role>("Relation Slots", 1, 1, 5, 1, DomainUtils.getRelationSlots(domainClass),
                     new SlotDomainObjectContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
@@ -108,7 +121,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addRelationSets() {
-            new GridPart<Role>("Relation Lists", 0, 2, 4, 2, DomainUtils.getRelationSets(domainClass),
+            new GridPart<Role>("Relation Lists", 0, 2, 5, 2, DomainUtils.getRelationSets(domainClass),
                     new RelationListButtonContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
@@ -130,23 +143,45 @@ public class DomainObjectView extends BasicDomainObjectView {
         private void hideRelationContents() {
             removeComponent(0, 3);
             Label label = new Label("Pick a relation from the table above to view its contents");
-            addComponent(label, 0, 3, 4, 3);
+            addComponent(label, 0, 3, 5, 3);
         }
 
         private void showRelationContents(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
             removeComponent(0, 3);
             DomainRelationListView relationViewer = new DomainRelationListView(domainObject, relationSet, playsRole);
-            addComponent(relationViewer, 0, 3, 4, 3);
+            addComponent(relationViewer, 0, 3, 5, 3);
         }
 
-        private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
-            final VerticalLayout layout = new VerticalLayout();
-            layout.addComponent(new Label("<h4>" + label + "</h4>", Label.CONTENT_XHTML));
-            addComponent(layout, col1, row1, col2, row2);
-            setComponentAlignment(layout, Alignment.TOP_CENTER);
-            return layout;
-        }
+        private void addConsistencyPredicates() {
+            Label title = new Label("<h4>Consistency Rules:</h4>", Label.CONTENT_XHTML);
+            addComponent(title, 0, 4, 5, 4);
 
+            int iteration = 0;
+            for (Method predicate : ConsistencyPredicateSystem.getPredicatesFor(domainObject)) {
+                Label className = new Label(predicate.getDeclaringClass().getName() + ".");
+                className.setSizeUndefined();
+                addComponent(className, 0, 5 + iteration, 1, 5 + iteration);
+                setComponentAlignment(className, Alignment.MIDDLE_RIGHT);
+                Label predicateName = new Label("<b>" + predicate.getName() + "()</b>", Label.CONTENT_XHTML);
+                addComponent(predicateName, 2, 5 + iteration, 4, 5 + iteration);
+
+                Embedded personalTooltip;
+                try {
+                    predicate.setAccessible(true);
+                    Object result = predicate.invoke(domainObject);
+                    if ((Boolean) result) {
+                        personalTooltip = new Embedded(null, new ThemeResource("icons/accept.gif"));
+                    } else {
+                        personalTooltip = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
+                    }
+                } catch (Exception ex) {
+                    personalTooltip = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
+                }
+                addComponent(personalTooltip, 5, 5 + iteration, 5, 5 + iteration);
+
+                iteration++;
+            }
+        }
     }
 
     private final DomainClass domainClass;
