@@ -56,7 +56,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private DomainObjectGrid() {
-            super(6, 40);
+            super(6, 100);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
@@ -64,7 +64,7 @@ public class DomainObjectView extends BasicDomainObjectView {
 
         private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
             final VerticalLayout layout = new VerticalLayout();
-            layout.addComponent(new Label("<h4>" + label + "</h4>", Label.CONTENT_XHTML));
+            layout.addComponent(new Label("<h3>" + label + "</h3>", Label.CONTENT_XHTML));
             addComponent(layout, col1, row1, col2, row2);
             setComponentAlignment(layout, Alignment.TOP_CENTER);
             return layout;
@@ -153,7 +153,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addConsistencyPredicates() {
-            Label title = new Label("<h4>Consistency Rules:</h4>", Label.CONTENT_XHTML);
+            Label title = new Label("<h3>Consistency Predicates:</h3>", Label.CONTENT_XHTML);
             addComponent(title, 0, 4, 5, 4);
 
             int iteration = 0;
