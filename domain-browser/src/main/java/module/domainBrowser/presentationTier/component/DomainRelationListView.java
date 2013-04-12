@@ -15,12 +15,12 @@ public class DomainRelationListView extends BasicDomainObjectView {
 
     protected final Set<DomainObject> relationSet;
 
-    protected final String playsRole;
+    protected final String title;
 
-    public DomainRelationListView(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
+    public DomainRelationListView(final DomainObject domainObject, final Set<DomainObject> relationSet, String title) {
         super(domainObject);
         this.relationSet = relationSet;
-        this.playsRole = playsRole;
+        this.title = title;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class DomainRelationListView extends BasicDomainObjectView {
     @Override
     public void attach() {
         super.attach();
-        addComponent(new Label("<h4>Contents of relation: " + playsRole + "</h4>", Label.CONTENT_XHTML));
+        addComponent(new Label("<h4>" + title + "</h4>", Label.CONTENT_XHTML));
 
         final Table table = createTable(relationSet.size(), new RelationListContentContainer());
         for (final DomainObject domainObject : relationSet) {
@@ -42,8 +42,10 @@ public class DomainRelationListView extends BasicDomainObjectView {
         }
 
         // a fixed height forces the table to use lazy-loading
-        table.setHeight("400px");
+        if (relationSet.size() > 20) {
+            table.setHeight("300px");
+        }
+
         addComponent(table);
     }
-
 }

@@ -1,6 +1,7 @@
 package module.domainBrowser.presentationTier.component;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -11,7 +12,11 @@ import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.pstm.AbstractDomainObject;
+import pt.ist.fenixframework.pstm.DomainMetaObject;
 import pt.ist.fenixframework.pstm.consistencyPredicates.ConsistencyPredicateSystem;
+import pt.ist.fenixframework.pstm.consistencyPredicates.DomainConsistencyPredicate;
+import pt.ist.fenixframework.pstm.consistencyPredicates.DomainDependenceRecord;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
@@ -148,7 +153,8 @@ public class DomainObjectView extends BasicDomainObjectView {
 
         private void showRelationContents(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
             removeComponent(0, 3);
-            DomainRelationListView relationViewer = new DomainRelationListView(domainObject, relationSet, playsRole);
+            DomainRelationListView relationViewer =
+                    new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
             addComponent(relationViewer, 0, 3, 5, 3);
         }
 
@@ -158,26 +164,44 @@ public class DomainObjectView extends BasicDomainObjectView {
 
             int iteration = 0;
             for (Method predicate : ConsistencyPredicateSystem.getPredicatesFor(domainObject)) {
-                Label className = new Label(predicate.getDeclaringClass().getName() + ".");
-                className.setSizeUndefined();
-                addComponent(className, 0, 5 + iteration, 1, 5 + iteration);
-                setComponentAlignment(className, Alignment.MIDDLE_RIGHT);
-                Label predicateName = new Label("<b>" + predicate.getName() + "()</b>", Label.CONTENT_XHTML);
-                addComponent(predicateName, 2, 5 + iteration, 4, 5 + iteration);
+                Label predicateName =
+                        new Label(predicate.getDeclaringClass().getName() + ".<b>" + predicate.getName() + "()</b>",
+                                Label.CONTENT_XHTML);
+                addComponent(predicateName, 0, 5 + iteration * 2, 4, 5 + iteration * 2);
+                setComponentAlignment(predicateName, Alignment.BOTTOM_LEFT);
 
-                Embedded personalTooltip;
+                Embedded predicateResult;
                 try {
                     predicate.setAccessible(true);
                     Object result = predicate.invoke(domainObject);
                     if ((Boolean) result) {
-                        personalTooltip = new Embedded(null, new ThemeResource("icons/accept.gif"));
+                        predicateResult = new Embedded(null, new ThemeResource("icons/accept.gif"));
                     } else {
-                        personalTooltip = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
+                        predicateResult = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
                     }
                 } catch (Exception ex) {
-                    personalTooltip = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
+                    predicateResult = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
                 }
-                addComponent(personalTooltip, 5, 5 + iteration, 5, 5 + iteration);
+                addComponent(predicateResult, 5, 5 + iteration * 2, 5, 5 + iteration * 2);
+                setComponentAlignment(predicateResult, Alignment.BOTTOM_LEFT);
+
+                if (FenixFramework.canCreateDomainMetaObjects()) {
+                    DomainMetaObject metaObject = ((AbstractDomainObject) domainObject).getDomainMetaObject();
+                    DomainConsistencyPredicate consistencyPredicate =
+                            DomainConsistencyPredicate.readDomainConsistencyPredicate(predicate);
+                    DomainDependenceRecord dependenceRecord = metaObject.getOwnDependenceRecord(consistencyPredicate);
+
+                    if (dependenceRecord != null && !dependenceRecord.getDependedDomainMetaObjects().isEmpty()) {
+                        Set<DomainObject> dependedObjs = new HashSet<DomainObject>();
+                        for (DomainMetaObject dependedMeta : dependenceRecord.getDependedDomainMetaObjects()) {
+                            dependedObjs.add(dependedMeta.getDomainObject());
+                        }
+
+                        DomainRelationListView relationViewer =
+                                new DomainRelationListView(domainObject, dependedObjs, "Depends on:");
+                        addComponent(relationViewer, 0, 6 + iteration * 2, 5, 6 + iteration * 2);
+                    }
+                }
 
                 iteration++;
             }
