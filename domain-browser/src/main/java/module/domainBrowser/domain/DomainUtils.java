@@ -151,6 +151,10 @@ public class DomainUtils {
         final SortedSet<Role> result = new TreeSet<Role>(RELATION_SLOT_COMPARATOR);
         for (DomainClass dc = domainClass; dc != null; dc = (DomainClass) dc.getSuperclass()) {
             for (final Role role : dc.getRoleSlotsList()) {
+                //Roles without name are unidirectional and should be skipped
+                if (role.getName() == null) {
+                    continue;
+                }
                 if (role.getMultiplicityUpper() == 1) {
                     result.add(role);
                 }
@@ -163,6 +167,10 @@ public class DomainUtils {
         final SortedSet<Role> result = new TreeSet<Role>(RELATION_SLOT_COMPARATOR);
         for (DomainClass dc = domainClass; dc != null; dc = (DomainClass) dc.getSuperclass()) {
             for (final Role role : dc.getRoleSlotsList()) {
+                //Roles without name are unidirectional and should be skipped
+                if (role.getName() == null) {
+                    continue;
+                }
                 if (role.getMultiplicityUpper() != 0 && role.getMultiplicityUpper() != 1) {
                     result.add(role);
                 }

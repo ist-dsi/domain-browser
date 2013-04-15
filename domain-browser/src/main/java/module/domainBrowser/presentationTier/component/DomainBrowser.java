@@ -143,7 +143,7 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
             setMargin(true);
             setSpacing(true);
 
-            Label label = new Label("External ID");
+            Label label = new Label("Browse Object by External ID");
             addComponent(label);
             setComponentAlignment(label, Alignment.MIDDLE_LEFT);
 
