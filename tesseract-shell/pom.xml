@@ -7,7 +7,7 @@
   </parent>
   <groupId>pt.ist</groupId>
   <artifactId>tesseract-shell</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1-RC1</version>
   <packaging>jar</packaging>
   <name>tesseract-shell</name>
   <properties>
