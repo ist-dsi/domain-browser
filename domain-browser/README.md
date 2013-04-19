@@ -30,13 +30,6 @@ A small administrative application that allows you to browse the existing domain
 	Added a table to display the playsRole names of the to-many-relations, with links to view the contents of each relation  
 	Added a table to display the contents of the to-many-relations, with links to browse the objects on the other end of the relation  
 
-**Bug Fixes:**  
-	Avoided NullPointerException while comparing Roles that do not have a playsRole  
-	Avoided NullPointerException due to a mislabeled slot  
-
-**Refactor:**  
-	Made the view of a relation list embedded inside the view of the object that owns the relation list.  
-
 **Enhancements:**  
 	Formatted and refactored the code, renamed a few classes and methods for clarity  
 	Added the name of the relation list that is being displayed, and made the relation list contents table lazy-loaded.  
