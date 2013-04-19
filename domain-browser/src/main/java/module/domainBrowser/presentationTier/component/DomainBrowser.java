@@ -64,86 +64,25 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
 
     private static final long serialVersionUID = 1L;
 
-    @SuppressWarnings("unchecked")
-    private class ReadDomainObjectByExternalIdButton extends Button implements ClickListener {
+    private ComponentContainer domainObjectViewer = null;
 
-        private static final long serialVersionUID = 1L;
+    private AbstractLayout layout;
 
-        private ReadDomainObjectByExternalIdButton() {
-            super("Search");
-            final ClickListener clickListener = this;
-            addListener(clickListener);
-        }
-
-        @Override
-        public void buttonClick(final ClickEvent event) {
-            if (domainObjectViewer != null) {
-                layout.removeComponent(domainObjectViewer);
-            }
-
-            final String value = (String) textField.getValue();
-            if (value != null && !value.isEmpty() && StringUtils.isNumeric(value)) {
-                final DomainObject domainObject = AbstractDomainObject.fromExternalId(value);
-                if (domainObject == null) {
-                } else {
-                    domainObjectViewer = new DomainObjectView(domainObject);
-                    layout.addComponent(domainObjectViewer);
-                }
-            }
-        }
+    public DomainBrowser() {
+        layout = new VerticalLayout();
+        layout.setSizeFull();
+        layout.addComponent(new Panel("<h2>Domain Browser</h2>", new SearchPanel()));
+        layout.addComponent(new Label("<br/>", Label.CONTENT_XHTML));
+        setCompositionRoot(layout);
     }
-
-    final TextField textField = new TextField();
-    ComponentContainer domainObjectViewer = null;
-    final AbstractLayout layout = new VerticalLayout();
 
     @Override
     public void attach() {
         super.attach();
-        layout.setSizeFull();
-        setCompositionRoot(layout);
-        createSearchForm();
 
         if (domainObjectViewer != null) {
             layout.addComponent(domainObjectViewer);
         }
-    }
-
-    private void createSearchForm() {
-        final HorizontalLayout searchPanelLayout = new HorizontalLayout();
-        searchPanelLayout.setMargin(true);
-        searchPanelLayout.setSpacing(true);
-
-        final Label label = new Label("External ID");
-        searchPanelLayout.addComponent(label);
-        searchPanelLayout.setComponentAlignment(label, Alignment.MIDDLE_LEFT);
-
-        searchPanelLayout.addComponent(textField);
-        searchPanelLayout.setComponentAlignment(textField, Alignment.MIDDLE_LEFT);
-
-        final ReadDomainObjectByExternalIdButton button = new ReadDomainObjectByExternalIdButton();
-        searchPanelLayout.addComponent(button);
-        searchPanelLayout.setComponentAlignment(button, Alignment.MIDDLE_LEFT);
-
-        final VerticalLayout paddingLeft = new VerticalLayout();
-        paddingLeft.setWidth(100, UNITS_PIXELS);
-        searchPanelLayout.addComponent(paddingLeft);
-
-        //final Resource resource = new ExternalResource("https://fenix-ashes.ist.utl.pt/home.do?method=logo&virtualHostId=42949672961");
-        final Resource resource = new ThemeResource("../../../images/BlueFenix.png");
-        final Embedded embedded = new Embedded(null, resource);
-        searchPanelLayout.addComponent(embedded);
-        searchPanelLayout.setComponentAlignment(embedded, Alignment.MIDDLE_RIGHT);
-
-        final VerticalLayout paddingRight = new VerticalLayout();
-        paddingRight.setWidth(30, UNITS_PIXELS);
-        searchPanelLayout.addComponent(paddingRight);
-
-        searchPanelLayout.addComponent(new Quote());
-
-        layout.addComponent(new Panel("<h2>Domain Browser</h2>", searchPanelLayout));
-
-        layout.addComponent(new Label("<br/>", Label.CONTENT_XHTML));
     }
 
     @Override
@@ -163,6 +102,72 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
             if (domainObject != null) {
                 domainObjectViewer = new DomainObjectView(domainObject);
             }
+        }
+    }
+
+    public class SearchPanel extends HorizontalLayout {
+
+        private class ReadDomainObjectByExternalIdButton extends Button implements ClickListener {
+
+            private static final long serialVersionUID = 1L;
+
+            private ReadDomainObjectByExternalIdButton() {
+                super("Search");
+                final ClickListener clickListener = this;
+                addListener(clickListener);
+            }
+
+            @Override
+            public void buttonClick(final ClickEvent event) {
+                if (domainObjectViewer != null) {
+                    layout.removeComponent(domainObjectViewer);
+                }
+
+                final String value = (String) textField.getValue();
+                if (value != null && !value.isEmpty() && StringUtils.isNumeric(value)) {
+                    final DomainObject domainObject = AbstractDomainObject.fromExternalId(value);
+                    if (domainObject == null) {
+                    } else {
+                        domainObjectViewer = new DomainObjectView(domainObject);
+                        layout.addComponent(domainObjectViewer);
+                    }
+                }
+            }
+        }
+
+        TextField textField = new TextField();
+
+        private static final long serialVersionUID = 1L;
+
+        public SearchPanel() {
+            setMargin(true);
+            setSpacing(true);
+
+            Label label = new Label("Browse Object by External ID");
+            addComponent(label);
+            setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+
+            addComponent(textField);
+            setComponentAlignment(textField, Alignment.MIDDLE_LEFT);
+
+            ReadDomainObjectByExternalIdButton button = new ReadDomainObjectByExternalIdButton();
+            addComponent(button);
+            setComponentAlignment(button, Alignment.MIDDLE_LEFT);
+
+            VerticalLayout paddingLeft = new VerticalLayout();
+            paddingLeft.setWidth(100, UNITS_PIXELS);
+            addComponent(paddingLeft);
+
+            Resource resource = new ThemeResource("../../../images/BlueFenix.png");
+            Embedded embedded = new Embedded(null, resource);
+            addComponent(embedded);
+            setComponentAlignment(embedded, Alignment.MIDDLE_RIGHT);
+
+            VerticalLayout paddingRight = new VerticalLayout();
+            paddingRight.setWidth(30, UNITS_PIXELS);
+            addComponent(paddingRight);
+
+            addComponent(new Quote());
         }
     }
 }

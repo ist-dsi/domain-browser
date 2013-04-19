@@ -30,7 +30,7 @@ public class BasicDomainObjectView extends VerticalLayout {
     }
 
     protected void addTitle() {
-        final StringBuilder builder = new StringBuilder("<h3>");
+        final StringBuilder builder = new StringBuilder("<h3>Browsing object: ");
         builder.append(domainObject.getClass().getName());
         builder.append(": ");
         builder.append(domainObject.getExternalId());

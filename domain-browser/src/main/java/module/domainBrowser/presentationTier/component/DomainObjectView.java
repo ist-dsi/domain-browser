@@ -1,5 +1,7 @@
 package module.domainBrowser.presentationTier.component;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -10,12 +12,19 @@ import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.pstm.AbstractDomainObject;
+import pt.ist.fenixframework.pstm.DomainMetaObject;
+import pt.ist.fenixframework.pstm.consistencyPredicates.ConsistencyPredicateSystem;
+import pt.ist.fenixframework.pstm.consistencyPredicates.DomainConsistencyPredicate;
+import pt.ist.fenixframework.pstm.consistencyPredicates.DomainDependenceRecord;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
@@ -52,10 +61,18 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private DomainObjectGrid() {
-            super(5, 4);
+            super(6, 100);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
+        }
+
+        private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
+            final VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>" + label + "</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, col1, row1, col2, row2);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+            return layout;
         }
 
         @Override
@@ -66,6 +83,7 @@ public class DomainObjectView extends BasicDomainObjectView {
             addRelationSlots();
             addRelationSets();
             hideRelationContents();
+            addConsistencyPredicates();
         }
 
         private void addChart() {
@@ -85,7 +103,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addValueSlots() {
-            new GridPart<Slot>("Value Slots", 1, 0, 4, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
+            new GridPart<Slot>("Value Slots", 1, 0, 5, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
                 @Override
                 protected Object[] getValues(final Slot slot) {
                     final String name = slot.getName();
@@ -96,7 +114,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addRelationSlots() {
-            new GridPart<Role>("Relation Slots", 1, 1, 4, 1, DomainUtils.getRelationSlots(domainClass),
+            new GridPart<Role>("Relation Slots", 1, 1, 5, 1, DomainUtils.getRelationSlots(domainClass),
                     new SlotDomainObjectContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
@@ -108,7 +126,7 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addRelationSets() {
-            new GridPart<Role>("Relation Lists", 0, 2, 4, 2, DomainUtils.getRelationSets(domainClass),
+            new GridPart<Role>("Relation Lists", 0, 2, 5, 2, DomainUtils.getRelationSets(domainClass),
                     new RelationListButtonContainer()) {
                 @Override
                 protected Object[] getValues(final Role role) {
@@ -130,23 +148,64 @@ public class DomainObjectView extends BasicDomainObjectView {
         private void hideRelationContents() {
             removeComponent(0, 3);
             Label label = new Label("Pick a relation from the table above to view its contents");
-            addComponent(label, 0, 3, 4, 3);
+            addComponent(label, 0, 3, 5, 3);
         }
 
         private void showRelationContents(final DomainObject domainObject, final Set<DomainObject> relationSet, String playsRole) {
             removeComponent(0, 3);
-            DomainRelationListView relationViewer = new DomainRelationListView(domainObject, relationSet, playsRole);
-            addComponent(relationViewer, 0, 3, 4, 3);
+            DomainRelationListView relationViewer =
+                    new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
+            addComponent(relationViewer, 0, 3, 5, 3);
         }
 
-        private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
-            final VerticalLayout layout = new VerticalLayout();
-            layout.addComponent(new Label("<h4>" + label + "</h4>", Label.CONTENT_XHTML));
-            addComponent(layout, col1, row1, col2, row2);
-            setComponentAlignment(layout, Alignment.TOP_CENTER);
-            return layout;
-        }
+        private void addConsistencyPredicates() {
+            Label title = new Label("<h3>Consistency Predicates:</h3>", Label.CONTENT_XHTML);
+            addComponent(title, 0, 4, 5, 4);
 
+            int iteration = 0;
+            for (Method predicate : ConsistencyPredicateSystem.getPredicatesFor(domainObject)) {
+                Label predicateName =
+                        new Label(predicate.getDeclaringClass().getName() + ".<b>" + predicate.getName() + "()</b>",
+                                Label.CONTENT_XHTML);
+                addComponent(predicateName, 0, 5 + iteration * 2, 4, 5 + iteration * 2);
+                setComponentAlignment(predicateName, Alignment.BOTTOM_LEFT);
+
+                Embedded predicateResult;
+                try {
+                    predicate.setAccessible(true);
+                    Object result = predicate.invoke(domainObject);
+                    if ((Boolean) result) {
+                        predicateResult = new Embedded(null, new ThemeResource("icons/accept.gif"));
+                    } else {
+                        predicateResult = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
+                    }
+                } catch (Exception ex) {
+                    predicateResult = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
+                }
+                addComponent(predicateResult, 5, 5 + iteration * 2, 5, 5 + iteration * 2);
+                setComponentAlignment(predicateResult, Alignment.BOTTOM_LEFT);
+
+                if (FenixFramework.canCreateDomainMetaObjects()) {
+                    DomainMetaObject metaObject = ((AbstractDomainObject) domainObject).getDomainMetaObject();
+                    DomainConsistencyPredicate consistencyPredicate =
+                            DomainConsistencyPredicate.readDomainConsistencyPredicate(predicate);
+                    DomainDependenceRecord dependenceRecord = metaObject.getOwnDependenceRecord(consistencyPredicate);
+
+                    if (dependenceRecord != null && !dependenceRecord.getDependedDomainMetaObjects().isEmpty()) {
+                        Set<DomainObject> dependedObjs = new HashSet<DomainObject>();
+                        for (DomainMetaObject dependedMeta : dependenceRecord.getDependedDomainMetaObjects()) {
+                            dependedObjs.add(dependedMeta.getDomainObject());
+                        }
+
+                        DomainRelationListView relationViewer =
+                                new DomainRelationListView(domainObject, dependedObjs, "Depends on:");
+                        addComponent(relationViewer, 0, 6 + iteration * 2, 5, 6 + iteration * 2);
+                    }
+                }
+
+                iteration++;
+            }
+        }
     }
 
     private final DomainClass domainClass;
