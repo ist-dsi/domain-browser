@@ -35,7 +35,7 @@ import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
 import pt.ist.bennu.core.domain.RoleType;
 import pt.ist.bennu.core.domain.User;
 import pt.ist.fenixframework.DomainObject;
-import pt.ist.fenixframework.pstm.AbstractDomainObject;
+import pt.ist.fenixframework.FenixFramework;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 
@@ -66,7 +66,7 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
 
     private ComponentContainer domainObjectViewer = null;
 
-    private AbstractLayout layout;
+    private final AbstractLayout layout;
 
     public DomainBrowser() {
         layout = new VerticalLayout();
@@ -125,7 +125,7 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
 
                 final String value = (String) textField.getValue();
                 if (value != null && !value.isEmpty() && StringUtils.isNumeric(value)) {
-                    final DomainObject domainObject = AbstractDomainObject.fromExternalId(value);
+                    final DomainObject domainObject = FenixFramework.getDomainObject(value);
                     if (domainObject == null) {
                     } else {
                         domainObjectViewer = new DomainObjectView(domainObject);

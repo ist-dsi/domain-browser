@@ -10,10 +10,10 @@ import java.util.TreeSet;
 import org.apache.commons.lang.StringUtils;
 
 import pt.ist.fenixframework.DomainObject;
-import pt.ist.fenixframework.pstm.AbstractDomainObject;
-import dml.DomainClass;
-import dml.Role;
-import dml.Slot;
+import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.dml.DomainClass;
+import pt.ist.fenixframework.dml.Role;
+import pt.ist.fenixframework.dml.Slot;
 
 public class DomainUtils {
 
@@ -48,8 +48,8 @@ public class DomainUtils {
     }
 
     public static DomainObject readDomainObject(final String externalId) {
-        return externalId != null && !externalId.isEmpty() && StringUtils.isNumeric(externalId) ? AbstractDomainObject
-                .fromExternalId(externalId) : null;
+        return externalId != null && !externalId.isEmpty() && StringUtils.isNumeric(externalId) ? FenixFramework
+                .getDomainObject(externalId) : null;
     }
 
     public static Object getSlot(final DomainObject domainObject, final Slot slot) {
