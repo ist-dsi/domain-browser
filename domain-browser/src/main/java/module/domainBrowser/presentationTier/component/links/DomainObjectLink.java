@@ -2,11 +2,10 @@ package module.domainBrowser.presentationTier.component.links;
 
 import module.domainBrowser.domain.DomainUtils;
 import pt.ist.fenixframework.DomainObject;
+import pt.ist.fenixframework.dml.Role;
 
 import com.vaadin.terminal.ExternalResource;
 import com.vaadin.ui.Link;
-
-import dml.Role;
 
 public class DomainObjectLink extends Link {
 
