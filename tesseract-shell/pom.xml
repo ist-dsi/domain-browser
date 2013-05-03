@@ -6,6 +6,7 @@
         <groupId>pt.ist</groupId>
         <artifactId>bennu-project</artifactId>
         <version>1.1.0-rc1</version>
+        <relativePath />
     </parent>
 
     <groupId>pt.ist</groupId>
