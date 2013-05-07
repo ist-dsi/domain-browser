@@ -5,19 +5,19 @@
     <parent>
         <groupId>pt.ist</groupId>
         <artifactId>bennu-project</artifactId>
-        <version>1.1.0-rc1</version>
+        <version>1.1.0-rc2</version>
         <relativePath />
     </parent>
 
     <groupId>pt.ist</groupId>
     <artifactId>tesseract-shell</artifactId>
-    <version>1.2.0-rc1</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>tesseract-shell</name>
 
     <properties>
-        <version.pt.ist.bennu.core>1.1.0-rc1</version.pt.ist.bennu.core>
-        <version.pt.ist.bennu.vaadin>1.1.0-rc1</version.pt.ist.bennu.vaadin>
+        <version.pt.ist.bennu.core>1.1.0-rc2</version.pt.ist.bennu.core>
+        <version.pt.ist.bennu.vaadin>1.1.0-rc2</version.pt.ist.bennu.vaadin>
     </properties>
 
     <dependencies>

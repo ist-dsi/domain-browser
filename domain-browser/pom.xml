@@ -6,13 +6,13 @@
     <parent>
         <groupId>pt.ist</groupId>
         <artifactId>bennu-project</artifactId>
-        <version>1.1.0-rc1</version>
+        <version>1.1.0-rc2</version>
         <relativePath />
     </parent>
 
     <groupId>pt.ist</groupId>
     <artifactId>domain-browser</artifactId>
-    <version>1.2.0-rc1</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>domain-browser</name>
@@ -31,12 +31,12 @@
         <dependency>
             <groupId>pt.ist</groupId>
             <artifactId>bennu-core</artifactId>
-            <version>1.1.0-rc1</version>
+            <version>1.1.0-rc2</version>
         </dependency>
         <dependency>
             <groupId>pt.ist</groupId>
             <artifactId>bennu-vaadin</artifactId>
-            <version>1.1.0-rc1</version>
+            <version>1.1.0-rc2</version>
         </dependency>
     </dependencies>
 
