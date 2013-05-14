@@ -25,28 +25,22 @@
 package module.domainBrowser.presentationTier.component;
 
 import java.util.Map;
+import java.util.Random;
 
 import module.domainBrowser.domain.DomainUtils;
-import module.domainBrowser.presentationTier.component.funStuff.Quote;
-
-import org.apache.commons.lang.StringUtils;
-
 import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
 import pt.ist.bennu.core.domain.RoleType;
 import pt.ist.bennu.core.domain.User;
 import pt.ist.fenixframework.DomainObject;
-import pt.ist.fenixframework.FenixFramework;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 
 import com.vaadin.terminal.Resource;
 import com.vaadin.terminal.ThemeResource;
-import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
@@ -54,35 +48,21 @@ import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
 
-@EmbeddedComponent(path = { "DomainBrowser" }, args = { "externalId" })
 /**
  * 
  * @author Luis Cruz
  * 
  */
-public class DomainBrowser extends CustomComponent implements EmbeddedComponentContainer {
+@SuppressWarnings("serial")
+@EmbeddedComponent(path = { "DomainBrowser" }, args = { "externalId" })
+public class DomainBrowser extends VerticalLayout implements EmbeddedComponentContainer {
 
-    private static final long serialVersionUID = 1L;
-
-    private ComponentContainer domainObjectViewer = null;
-
-    private final AbstractLayout layout;
+    private ComponentContainer domainView;
 
     public DomainBrowser() {
-        layout = new VerticalLayout();
-        layout.setSizeFull();
-        layout.addComponent(new Panel("<h2>Domain Browser</h2>", new SearchPanel()));
-        layout.addComponent(new Label("<br/>", Label.CONTENT_XHTML));
-        setCompositionRoot(layout);
-    }
-
-    @Override
-    public void attach() {
-        super.attach();
-
-        if (domainObjectViewer != null) {
-            layout.addComponent(domainObjectViewer);
-        }
+        setSizeFull();
+        addComponent(new Panel("<h2>Domain Browser</h2>", new SearchPanel()));
+        addComponent(new Label("<br/>", Label.CONTENT_XHTML));
     }
 
     @Override
@@ -91,17 +71,21 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
         return user != null && user.hasRoleType(RoleType.MANAGER);
     }
 
+    private void viewDomainObject(String id) {
+        final DomainObject domainObject = DomainUtils.readDomainObject(id);
+        if (domainObject != null) {
+            if (domainView != null) {
+                removeComponent(domainView);
+            }
+            domainView = new DomainObjectView(domainObject);
+            addComponent(domainView);
+        }
+    }
+
     @Override
     public void setArguments(final Map<String, String> args) {
-        if (domainObjectViewer != null) {
-            layout.removeComponent(domainObjectViewer);
-        }
         if (args != null) {
-            final String externalId = args.get("externalId");
-            final DomainObject domainObject = DomainUtils.readDomainObject(externalId);
-            if (domainObject != null) {
-                domainObjectViewer = new DomainObjectView(domainObject);
-            }
+            viewDomainObject(args.get("externalId"));
         }
     }
 
@@ -109,35 +93,18 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
 
         private class ReadDomainObjectByExternalIdButton extends Button implements ClickListener {
 
-            private static final long serialVersionUID = 1L;
-
             private ReadDomainObjectByExternalIdButton() {
                 super("Search");
-                final ClickListener clickListener = this;
-                addListener(clickListener);
+                addListener((ClickListener) this);
             }
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (domainObjectViewer != null) {
-                    layout.removeComponent(domainObjectViewer);
-                }
-
-                final String value = (String) textField.getValue();
-                if (value != null && !value.isEmpty() && StringUtils.isNumeric(value)) {
-                    final DomainObject domainObject = FenixFramework.getDomainObject(value);
-                    if (domainObject == null) {
-                    } else {
-                        domainObjectViewer = new DomainObjectView(domainObject);
-                        layout.addComponent(domainObjectViewer);
-                    }
-                }
+                viewDomainObject((String) textField.getValue());
             }
         }
 
         TextField textField = new TextField();
-
-        private static final long serialVersionUID = 1L;
 
         public SearchPanel() {
             setMargin(true);
@@ -168,6 +135,41 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
             addComponent(paddingRight);
 
             addComponent(new Quote());
+        }
+    }
+
+    public static class Quote extends VerticalLayout {
+
+        private static final long serialVersionUID = 1L;
+
+        private static final Random RANDOM = new Random(System.currentTimeMillis());
+
+        private static final String[][] QUOTES = new String[][] {
+                new String[] { "With great power, comes great responsibility.", "Stan Lee (Peter Parker)" },
+                new String[] { "Use the Force, Luke.", "George Lucas (Obi-Wan)" },
+                new String[] { "This is all your fault.", "George Lucas (C-3PO)" },
+                new String[] { "Help me, Obi-Wan Kenobi; you're my only hope.", "George Lucas (Princess Leia)" },
+                new String[] { "I sense something; a presence I've not felt since...", "George Lucas (Darth Vader)" },
+                new String[] { "The Force is strong with this one.", "George Lucas (Darth Vader)" },
+                new String[] { "The Force will be with you, always.", "George Lucas (Obi-Wan)" },
+                new String[] { "I have a very bad feeling about this.", "George Lucas (Luke)" },
+                new String[] { "That malfunctioning little twirp, this is all his fault.", "George Lucas (C-3PO)" },
+                new String[] { "Your eyes can deceive you; don't trust them.", "George Lucas (Obi-Wan)" },
+                new String[] { "There is no spoon.", "Neo (The Matrix)" },
+                new String[] { "Free your mind.", "Morpheus (The Matrix)" },
+                new String[] { "Welcome to the real world.", "Morpheus (The Matrix)" },
+                new String[] { "Never send a human to do a machine's job.", "Agent Smith (The Matrix)" },
+                new String[] { "Ignorance is bliss.", "Cypher (The Matrix)" } };
+
+        public Quote() {
+            setSizeFull();
+            String[] quote = QUOTES[RANDOM.nextInt(QUOTES.length)];
+            final Label quoteText = new Label("<i>\"" + quote[0] + "\"</i>", Label.CONTENT_XHTML);
+            addComponent(quoteText);
+            setComponentAlignment(quoteText, Alignment.MIDDLE_LEFT);
+            final Label quoteAuthor = new Label("-- " + quote[1]);
+            addComponent(quoteAuthor);
+            setComponentAlignment(quoteAuthor, Alignment.MIDDLE_RIGHT);
         }
     }
 }
