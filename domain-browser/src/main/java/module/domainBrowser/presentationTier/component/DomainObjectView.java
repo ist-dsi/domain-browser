@@ -10,13 +10,17 @@ import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
 
 import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
+import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
-import pt.ist.fenixframework.pstm.AbstractDomainObject;
-import pt.ist.fenixframework.pstm.DomainMetaObject;
-import pt.ist.fenixframework.pstm.consistencyPredicates.ConsistencyPredicateSystem;
-import pt.ist.fenixframework.pstm.consistencyPredicates.DomainConsistencyPredicate;
-import pt.ist.fenixframework.pstm.consistencyPredicates.DomainDependenceRecord;
+import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicateSystem;
+import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicatesConfig;
+import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
+import pt.ist.fenixframework.consistencyPredicates.DomainDependenceRecord;
+import pt.ist.fenixframework.dml.DomainClass;
+import pt.ist.fenixframework.dml.DomainModel;
+import pt.ist.fenixframework.dml.Role;
+import pt.ist.fenixframework.dml.Slot;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
@@ -30,11 +34,6 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.BaseTheme;
-
-import dml.DomainClass;
-import dml.DomainModel;
-import dml.Role;
-import dml.Slot;
 
 @SuppressWarnings("serial")
 public class DomainObjectView extends BasicDomainObjectView {
@@ -185,15 +184,15 @@ public class DomainObjectView extends BasicDomainObjectView {
                 addComponent(predicateResult, 5, 5 + iteration * 2, 5, 5 + iteration * 2);
                 setComponentAlignment(predicateResult, Alignment.BOTTOM_LEFT);
 
-                if (FenixFramework.canCreateDomainMetaObjects()) {
-                    DomainMetaObject metaObject = ((AbstractDomainObject) domainObject).getDomainMetaObject();
+                if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+                    DomainMetaObject metaObject = DomainMetaObject.getDomainMetaObjectFor(domainObject);
                     DomainConsistencyPredicate consistencyPredicate =
                             DomainConsistencyPredicate.readDomainConsistencyPredicate(predicate);
                     DomainDependenceRecord dependenceRecord = metaObject.getOwnDependenceRecord(consistencyPredicate);
 
-                    if (dependenceRecord != null && !dependenceRecord.getDependedDomainMetaObjects().isEmpty()) {
+                    if (dependenceRecord != null && !dependenceRecord.getDependedDomainMetaObjectSet().isEmpty()) {
                         Set<DomainObject> dependedObjs = new HashSet<DomainObject>();
-                        for (DomainMetaObject dependedMeta : dependenceRecord.getDependedDomainMetaObjects()) {
+                        for (DomainMetaObject dependedMeta : dependenceRecord.getDependedDomainMetaObjectSet()) {
                             dependedObjs.add(dependedMeta.getDomainObject());
                         }
 
