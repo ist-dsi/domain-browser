@@ -10,14 +10,14 @@
 
     <artifactId>domain-browser-project</artifactId>
     <name>Bennu Domain Browser</name>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <packaging>pom</packaging>
 
     <scm>
         <connection>scm:git:git@github.com:ist-dsi/domain-browser.git</connection>
         <developerConnection>scm:git:git@github.com:ist-dsi/domain-browser.git</developerConnection>
         <url>http://ist-dsi.github.io/domain-browser</url>
-        <tag>HEAD</tag>
+        <tag>v1.3.0</tag>
     </scm>
 
     <modules>
