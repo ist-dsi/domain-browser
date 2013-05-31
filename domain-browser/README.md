@@ -5,6 +5,20 @@ A small administrative application that allows you to browse the existing domain
 ---
 ## Change Logs:
 
+### v1.3.0
+
+**New Features:**  
+	Added a new view that displays a list of all existing domain classes, the number of instances, predicates and inconsistencies for each class.  
+
+**Enhancements:**  
+	Simpified the code of the DomainBrowser and the Quote for clarity, and added a few more quotes  
+
+
+
+### v1.2.0  
+**Enhancements:**  
+	Upgraded to the Fenix-Framework 2 API
+
 ### v1.1.0
 
 **New Features:**  
