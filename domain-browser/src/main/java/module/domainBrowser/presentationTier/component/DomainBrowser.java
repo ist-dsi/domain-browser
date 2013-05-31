@@ -25,64 +25,45 @@
 package module.domainBrowser.presentationTier.component;
 
 import java.util.Map;
+import java.util.Random;
 
 import module.domainBrowser.domain.DomainUtils;
-import module.domainBrowser.presentationTier.component.funStuff.Quote;
-
-import org.apache.commons.lang.StringUtils;
-
 import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
 import pt.ist.bennu.core.domain.RoleType;
 import pt.ist.bennu.core.domain.User;
 import pt.ist.fenixframework.DomainObject;
-import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicatesConfig;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 
-import com.vaadin.terminal.Resource;
 import com.vaadin.terminal.ThemeResource;
-import com.vaadin.ui.AbstractLayout;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.ComponentContainer;
-import com.vaadin.ui.CustomComponent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Embedded;
-import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.BaseTheme;
 
-@EmbeddedComponent(path = { "DomainBrowser" }, args = { "externalId" })
 /**
  * 
  * @author Luis Cruz
  * 
  */
-public class DomainBrowser extends CustomComponent implements EmbeddedComponentContainer {
+@SuppressWarnings("serial")
+@EmbeddedComponent(path = { "DomainBrowser" }, args = { "externalId" })
+public class DomainBrowser extends VerticalLayout implements EmbeddedComponentContainer {
 
-    private static final long serialVersionUID = 1L;
-
-    private ComponentContainer domainObjectViewer = null;
-
-    private final AbstractLayout layout;
+    private Component domainView;
 
     public DomainBrowser() {
-        layout = new VerticalLayout();
-        layout.setSizeFull();
-        layout.addComponent(new Panel("<h2>Domain Browser</h2>", new SearchPanel()));
-        layout.addComponent(new Label("<br/>", Label.CONTENT_XHTML));
-        setCompositionRoot(layout);
-    }
-
-    @Override
-    public void attach() {
-        super.attach();
-
-        if (domainObjectViewer != null) {
-            layout.addComponent(domainObjectViewer);
-        }
+        setSizeFull();
+        addComponent(new Panel("<h2>Domain Browser</h2>", new SearchPanel()));
+        addComponent(new Label("<br/>", Label.CONTENT_XHTML));
     }
 
     @Override
@@ -91,83 +72,157 @@ public class DomainBrowser extends CustomComponent implements EmbeddedComponentC
         return user != null && user.hasRoleType(RoleType.MANAGER);
     }
 
-    @Override
-    public void setArguments(final Map<String, String> args) {
-        if (domainObjectViewer != null) {
-            layout.removeComponent(domainObjectViewer);
-        }
-        if (args != null) {
-            final String externalId = args.get("externalId");
-            final DomainObject domainObject = DomainUtils.readDomainObject(externalId);
-            if (domainObject != null) {
-                domainObjectViewer = new DomainObjectView(domainObject);
-            }
+    private void viewDomainObject(String id) {
+        final DomainObject domainObject = DomainUtils.readDomainObject(id);
+        if (domainObject != null) {
+            changeDomainView(new DomainObjectView(domainObject));
         }
     }
 
-    public class SearchPanel extends HorizontalLayout {
+    private void changeDomainView(Component newDomainView) {
+        if (domainView != null) {
+            removeComponent(domainView);
+        }
+        domainView = newDomainView;
+        addComponent(domainView);
+    }
+
+    @Override
+    public void setArguments(final Map<String, String> args) {
+        if (args != null) {
+            viewDomainObject(args.get("externalId"));
+        }
+    }
+
+    public class SearchPanel extends GridLayout {
 
         private class ReadDomainObjectByExternalIdButton extends Button implements ClickListener {
 
-            private static final long serialVersionUID = 1L;
-
             private ReadDomainObjectByExternalIdButton() {
                 super("Search");
-                final ClickListener clickListener = this;
-                addListener(clickListener);
+                addListener((ClickListener) this);
             }
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                if (domainObjectViewer != null) {
-                    layout.removeComponent(domainObjectViewer);
-                }
+                viewDomainObject((String) textField.getValue());
+            }
+        }
 
-                final String value = (String) textField.getValue();
-                if (value != null && !value.isEmpty() && StringUtils.isNumeric(value)) {
-                    final DomainObject domainObject = FenixFramework.getDomainObject(value);
-                    if (domainObject == null) {
-                    } else {
-                        domainObjectViewer = new DomainObjectView(domainObject);
-                        layout.addComponent(domainObjectViewer);
-                    }
+        private class ViewAllDomainClassesButtonLink extends Button implements ClickListener {
+
+            private ViewAllDomainClassesButtonLink() {
+                super("View all domain classes");
+                addListener((ClickListener) this);
+                addStyleName(BaseTheme.BUTTON_LINK);
+            }
+
+            @Override
+            public void buttonClick(final ClickEvent event) {
+                if (!ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+                    changeDomainView(new Label(
+                            "To view domain class information, the fenix framework must be configured to create meta objects (see Config.canCreateDomainMetaObjects)"));
+                } else {
+                    changeDomainView(new DomainClassListView());
                 }
             }
         }
 
         TextField textField = new TextField();
 
-        private static final long serialVersionUID = 1L;
-
         public SearchPanel() {
+            super();
+            setSizeFull();
+            setColumns(5);
+            setRows(2);
+
             setMargin(true);
             setSpacing(true);
 
-            Label label = new Label("Browse Object by External ID");
-            addComponent(label);
-            setComponentAlignment(label, Alignment.MIDDLE_LEFT);
+            Label browseObjectlabel = new Label("Browse Object by External ID");
+            browseObjectlabel.setSizeUndefined();
+            addComponent(browseObjectlabel, 0, 0);
+            setComponentAlignment(browseObjectlabel, Alignment.MIDDLE_RIGHT);
+            setColumnExpandRatio(0, 0);
 
-            addComponent(textField);
-            setComponentAlignment(textField, Alignment.MIDDLE_LEFT);
+            textField.setSizeUndefined();
+            addComponent(textField, 1, 0);
+            setColumnExpandRatio(1, 0);
 
-            ReadDomainObjectByExternalIdButton button = new ReadDomainObjectByExternalIdButton();
-            addComponent(button);
-            setComponentAlignment(button, Alignment.MIDDLE_LEFT);
+            ReadDomainObjectByExternalIdButton browseObjectButton = new ReadDomainObjectByExternalIdButton();
+            browseObjectButton.setSizeUndefined();
+            addComponent(browseObjectButton, 2, 0);
+            setComponentAlignment(browseObjectButton, Alignment.MIDDLE_LEFT);
+            setColumnExpandRatio(2, 0);
 
-            VerticalLayout paddingLeft = new VerticalLayout();
-            paddingLeft.setWidth(100, UNITS_PIXELS);
-            addComponent(paddingLeft);
+            ViewAllDomainClassesButtonLink browseClassesLink = new ViewAllDomainClassesButtonLink();
+            browseClassesLink.setSizeUndefined();
+            addComponent(browseClassesLink, 0, 1, 2, 1);
 
-            Resource resource = new ThemeResource("../../../images/BlueFenix.png");
-            Embedded embedded = new Embedded(null, resource);
-            addComponent(embedded);
-            setComponentAlignment(embedded, Alignment.MIDDLE_RIGHT);
+            Embedded icon = new Embedded(null, new ThemeResource("../../../images/BlueFenix.png"));
+            icon.setSizeUndefined();
+            addComponent(icon, 3, 0, 3, 1);
+            setComponentAlignment(icon, Alignment.MIDDLE_CENTER);
+            setColumnExpandRatio(3, 55);
 
-            VerticalLayout paddingRight = new VerticalLayout();
-            paddingRight.setWidth(30, UNITS_PIXELS);
-            addComponent(paddingRight);
+            Quote quote = new Quote();
+            Label quoteText = new Label("<i>\"" + quote.getText() + "\"</i>", Label.CONTENT_XHTML);
+            quoteText.setSizeUndefined();
+            addComponent(quoteText, 4, 0);
+            setComponentAlignment(quoteText, Alignment.MIDDLE_LEFT);
 
-            addComponent(new Quote());
+            Label quoteAuthor = new Label("-- " + quote.getAuthor());
+            quoteAuthor.setSizeUndefined();
+            addComponent(quoteAuthor, 4, 1);
+            setComponentAlignment(quoteAuthor, Alignment.MIDDLE_RIGHT);
+            setColumnExpandRatio(4, 45);
+        }
+    }
+
+    public static class Quote {
+
+        private static final long serialVersionUID = 1L;
+
+        private static final String[][] QUOTES = new String[][] {
+                new String[] { "With great power, comes great responsibility.", "Stan Lee (Peter Parker)" },
+
+                new String[] { "Use the Force, Luke.", "George Lucas (Obi-Wan)" },
+                new String[] { "This is all your fault.", "George Lucas (C-3PO)" },
+                new String[] { "Help me, Obi-Wan Kenobi; you're my only hope.", "George Lucas (Princess Leia)" },
+                new String[] { "I sense something; a presence I've not felt since...", "George Lucas (Darth Vader)" },
+                new String[] { "The Force is strong with this one.", "George Lucas (Darth Vader)" },
+                new String[] { "The Force will be with you, always.", "George Lucas (Obi-Wan)" },
+                new String[] { "I have a very bad feeling about this.", "George Lucas (Luke)" },
+                new String[] { "That malfunctioning little twirp, this is all his fault.", "George Lucas (C-3PO)" },
+                new String[] { "Your eyes can deceive you; don't trust them.", "George Lucas (Obi-Wan)" },
+
+                new String[] { "What we do in life echoes in eternity.", "Maximus (Gladiator)" },
+
+                new String[] { "There is no spoon.", "Neo (The Matrix)" },
+                new String[] { "Free your mind.", "Morpheus (The Matrix)" },
+                new String[] { "Welcome to the real world.", "Morpheus (The Matrix)" },
+                new String[] { "Never send a human to do a machine's job.", "Agent Smith (The Matrix)" },
+                new String[] { "Ignorance is bliss.", "Cypher (The Matrix)" },
+                new String[] { "This is my world! My world!", "Agent Smith (The Matrix)" } };
+
+        private final String text;
+
+        private final String author;
+
+        public String getText() {
+            return text;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public Quote() {
+            Random RANDOM = new Random(System.currentTimeMillis());
+            String[] quote = QUOTES[RANDOM.nextInt(QUOTES.length)];
+
+            text = quote[0];
+            author = quote[1];
         }
     }
 }
