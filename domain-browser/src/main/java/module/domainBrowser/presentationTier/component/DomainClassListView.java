@@ -11,9 +11,10 @@ import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
-public class DomainClassListView extends Table {
+public class DomainClassListView extends VerticalLayout {
 
     public static class DomainMetaClassBean {
 
@@ -71,27 +72,42 @@ public class DomainClassListView extends Table {
 
     public DomainClassListView() {
         super();
-        setSizeFull();
-        setHeight("500px");
+        setSpacing(true);
 
-        BeanItemContainer<DomainMetaClassBean> container =
-                new BeanItemContainer<DomainMetaClassBean>(DomainMetaClassBean.class,
-                        DomainMetaClassBean.readAllDomainMetaClasses());
+        addComponent(new Label("All Domain Classes"));
 
         //The BeanItemContainer discovers the properties by using reflection to search for public getters
         //Methods discovered by reflection are in an arbitrary order
-        //This code order the columns manually (by the order they are added)
-        container.removeContainerProperty("className");
-        container.removeContainerProperty("objects");
-        container.removeContainerProperty("predicates");
-        container.removeContainerProperty("inconsistencies");
-        container.addNestedContainerProperty("className");
-        container.addNestedContainerProperty("objects");
-        container.addNestedContainerProperty("predicates");
-        container.addNestedContainerProperty("inconsistencies");
+        //This code orders the columns manually (by the order they are added)
+        final BeanItemContainer<DomainMetaClassBean> container =
+                new BeanItemContainer<DomainMetaClassBean>(DomainMetaClassBean.class,
+                        DomainMetaClassBean.readAllDomainMetaClasses()) {
+                    {
+                        removeContainerProperty("className");
+                        removeContainerProperty("objects");
+                        removeContainerProperty("predicates");
+                        removeContainerProperty("inconsistencies");
+                        addNestedContainerProperty("className");
+                        addNestedContainerProperty("objects");
+                        addNestedContainerProperty("predicates");
+                        addNestedContainerProperty("inconsistencies");
+                    }
+                };
+        Table classListTable = new Table() {
+            {
+                setSizeFull();
+                setHeight("500px");
+                setContainerDataSource(container);
+                setColumnAlignment("className", Table.ALIGN_RIGHT);
+            }
+        };
+        addComponent(classListTable);
 
-        setContainerDataSource(container);
+        addComponent(new Label("Label:"));
+        addComponent(new Label("Objects - Number of existing objects of the class (and subclasses)"));
+        addComponent(new Label("Predicates - Number of predicates declared by the class"));
+        addComponent(new Label("Inconsistencies - Objects that are inconsistent according to the declared predicates, "
+                + "among the existing objects of the class (and subclasses)"));
 
-        setColumnAlignment("className", Table.ALIGN_RIGHT);
     }
 }
