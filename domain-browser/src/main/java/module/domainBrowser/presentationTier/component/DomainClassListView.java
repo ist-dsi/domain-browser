@@ -83,7 +83,6 @@ public class DomainClassListView extends VerticalLayout {
                     index += 2;
                 }
             }
-            System.out.println("searching classes according to: " + classSearch);
 
             Collection<DomainMetaClassBean> matchingMetaClassBeans = new ArrayList<DomainMetaClassBean>();
             for (DomainMetaClass metaClass : DomainFenixFrameworkRoot.getInstance().getDomainMetaClassSet()) {
