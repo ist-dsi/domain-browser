@@ -5,6 +5,16 @@ A small administrative application that allows you to browse the existing domain
 ---
 ## Change Logs:
 
+### v1.4.0
+
+**New Features:**  
+	The input field that searches an object by its ID now allows to search for class names (including packages)  
+
+**Enhancements:**  
+	Added a header and labels to explain the columns of the table in the DomainClassListView  
+
+
+
 ### v1.3.0
 
 **New Features:**  
