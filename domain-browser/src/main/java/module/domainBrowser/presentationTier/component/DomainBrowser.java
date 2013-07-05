@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Random;
 
 import module.domainBrowser.domain.DomainUtils;
+
+import org.apache.commons.lang.StringUtils;
+
 import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
 import pt.ist.bennu.core.domain.RoleType;
 import pt.ist.bennu.core.domain.User;
@@ -96,16 +99,21 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
 
     public class SearchPanel extends GridLayout {
 
-        private class ReadDomainObjectByExternalIdButton extends Button implements ClickListener {
+        private class SearchButton extends Button implements ClickListener {
 
-            private ReadDomainObjectByExternalIdButton() {
+            private SearchButton() {
                 super("Search");
                 addListener((ClickListener) this);
             }
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                viewDomainObject((String) textField.getValue());
+                String fieldValue = (String) textField.getValue();
+                if (StringUtils.isNumeric(fieldValue)) {
+                    viewDomainObject((String) textField.getValue());
+                } else {
+                    changeDomainView(new DomainClassListView(fieldValue));
+                }
             }
         }
 
@@ -139,7 +147,7 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
             setMargin(true);
             setSpacing(true);
 
-            Label browseObjectlabel = new Label("Browse Object by External ID");
+            Label browseObjectlabel = new Label("Search Class or Object");
             browseObjectlabel.setSizeUndefined();
             addComponent(browseObjectlabel, 0, 0);
             setComponentAlignment(browseObjectlabel, Alignment.MIDDLE_RIGHT);
@@ -149,7 +157,7 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
             addComponent(textField, 1, 0);
             setColumnExpandRatio(1, 0);
 
-            ReadDomainObjectByExternalIdButton browseObjectButton = new ReadDomainObjectByExternalIdButton();
+            SearchButton browseObjectButton = new SearchButton();
             browseObjectButton.setSizeUndefined();
             addComponent(browseObjectButton, 2, 0);
             setComponentAlignment(browseObjectButton, Alignment.MIDDLE_LEFT);
