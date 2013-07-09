@@ -108,9 +108,9 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
 
             @Override
             public void buttonClick(final ClickEvent event) {
-                String fieldValue = (String) textField.getValue();
-                if (StringUtils.isNumeric(fieldValue)) {
-                    viewDomainObject((String) textField.getValue());
+                String fieldValue = ((String) textField.getValue()).trim();
+                if (!StringUtils.isEmpty(fieldValue) && StringUtils.isNumeric(fieldValue)) {
+                    viewDomainObject(fieldValue);
                 } else {
                     changeDomainView(new DomainClassListView(fieldValue));
                 }
@@ -154,6 +154,7 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
             setColumnExpandRatio(0, 0);
 
             textField.setSizeUndefined();
+            textField.focus();
             addComponent(textField, 1, 0);
             setColumnExpandRatio(1, 0);
 
