@@ -31,12 +31,20 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.BaseTheme;
 
 @SuppressWarnings("serial")
-public class DomainObjectView extends BasicDomainObjectView {
+public class DomainObjectView extends VerticalLayout {
+
+    protected final DomainObject domainObject;
+
+    protected static final String VALUE_COLUMN = "Value";
+    protected static final String SLOT_COLUMN = "Slot Name";
+    protected static final String PLAYS_ROLE_COLUMN = "PlaysRole Name";
+    protected static final String TYPE_COLUMN = "Type";
 
     private class DomainObjectGrid extends GridLayout {
 
@@ -44,7 +52,12 @@ public class DomainObjectView extends BasicDomainObjectView {
             protected GridPart(final String caption, final int col1, final int row1, final int col2, final int row2,
                     final SortedSet<T> set, final IndexedContainer container) {
                 final VerticalLayout slotLayout = addGridPart(caption, col1, row1, col2, row2);
-                final Table table = createTable(set.size(), container);
+                final Table table = new Table();
+                table.setWidth(100, UNITS_PERCENTAGE);
+                int height = set.size() * 20 + 25;
+                table.setHeight(height, UNITS_PIXELS);
+                table.setContainerDataSource(container);
+
                 for (final T t : set) {
                     final Object[] o = getValues(t);
                     final Item item = table.addItem(o[0]);
@@ -102,7 +115,12 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addValueSlots() {
-            new GridPart<Slot>("Value Slots", 1, 0, 5, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
+            IndexedContainer container = new IndexedContainer();
+            container.addContainerProperty(SLOT_COLUMN, String.class, null);
+            container.addContainerProperty(VALUE_COLUMN, String.class, null);
+            container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+            new GridPart<Slot>("Value Slots", 1, 0, 5, 0, DomainUtils.getSlots(domainClass), container) {
                 @Override
                 protected Object[] getValues(final Slot slot) {
                     final String name = slot.getName();
@@ -113,8 +131,12 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addRelationSlots() {
-            new GridPart<Role>("Relation Slots", 1, 1, 5, 1, DomainUtils.getRelationSlots(domainClass),
-                    new SlotDomainObjectContainer()) {
+            IndexedContainer container = new IndexedContainer();
+            container.addContainerProperty(SLOT_COLUMN, String.class, null);
+            container.addContainerProperty(VALUE_COLUMN, Link.class, null);
+            container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+            new GridPart<Role>("Relation Slots", 1, 1, 5, 1, DomainUtils.getRelationSlots(domainClass), container) {
                 @Override
                 protected Object[] getValues(final Role role) {
                     final String name = role.getName();
@@ -124,9 +146,51 @@ public class DomainObjectView extends BasicDomainObjectView {
             };
         }
 
+        private class DomainRelationListView extends VerticalLayout {
+            protected final Set<DomainObject> relationSet;
+            protected final String title;
+
+            public DomainRelationListView(final DomainObject domainObject, final Set<DomainObject> relationSet, String title) {
+                this.relationSet = relationSet;
+                this.title = title;
+            }
+
+            @Override
+            public void attach() {
+                super.attach();
+                addComponent(new Label("<h3>" + title + "</h3>", Label.CONTENT_XHTML));
+
+                IndexedContainer container = new IndexedContainer();
+                container.addContainerProperty(VALUE_COLUMN, Link.class, null);
+                container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+                final Table table = new Table();
+                table.setWidth(100, UNITS_PERCENTAGE);
+                int height = relationSet.size() * 20 + 25;
+                table.setHeight(height, UNITS_PIXELS);
+                table.setContainerDataSource(container);
+
+                for (final DomainObject domainObject : relationSet) {
+                    final Item item = table.addItem(domainObject.getExternalId());
+                    item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject));
+                    item.getItemProperty(TYPE_COLUMN).setValue(domainObject.getClass().getName());
+                }
+
+                // a fixed height forces the table to use lazy-loading
+                if (relationSet.size() > 20) {
+                    table.setHeight("300px");
+                }
+
+                addComponent(table);
+            }
+        }
+
         private void addRelationSets() {
-            new GridPart<Role>("Relation Lists", 0, 2, 5, 2, DomainUtils.getRelationSets(domainClass),
-                    new RelationListButtonContainer()) {
+            IndexedContainer container = new IndexedContainer();
+            container.addContainerProperty(PLAYS_ROLE_COLUMN, Button.class, null);
+            container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+            new GridPart<Role>("Relation Lists", 0, 2, 5, 2, DomainUtils.getRelationSets(domainClass), container) {
                 @Override
                 protected Object[] getValues(final Role role) {
                     Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
@@ -154,6 +218,7 @@ public class DomainObjectView extends BasicDomainObjectView {
             removeComponent(0, 3);
             DomainRelationListView relationViewer =
                     new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
+
             addComponent(relationViewer, 0, 3, 5, 3);
         }
 
@@ -210,7 +275,8 @@ public class DomainObjectView extends BasicDomainObjectView {
     private final DomainClass domainClass;
 
     public DomainObjectView(final DomainObject domainObject) {
-        super(domainObject);
+        super();
+        this.domainObject = domainObject;
         final DomainModel domainModel = FenixFramework.getDomainModel();
         domainClass = domainModel.findClass(domainObject.getClass().getName());
     }
@@ -218,6 +284,14 @@ public class DomainObjectView extends BasicDomainObjectView {
     @Override
     public void attach() {
         super.attach();
+
+        final StringBuilder builder = new StringBuilder("<h3>Browsing object - ");
+        builder.append(domainObject.getClass().getName());
+        builder.append(":");
+        builder.append(domainObject.getExternalId());
+        builder.append("</h3>");
+        addComponent(new Label(builder.toString(), Label.CONTENT_XHTML));
+
         final DomainObjectGrid grid = new DomainObjectGrid();
         addComponent(grid);
         setComponentAlignment(grid, Alignment.MIDDLE_CENTER);
