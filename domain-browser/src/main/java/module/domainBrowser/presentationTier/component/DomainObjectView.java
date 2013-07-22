@@ -3,7 +3,6 @@ package module.domainBrowser.presentationTier.component;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedSet;
 
 import module.domainBrowser.domain.DomainUtils;
 import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
@@ -48,43 +47,11 @@ public class DomainObjectView extends VerticalLayout {
 
     private class DomainObjectGrid extends GridLayout {
 
-        protected abstract class GridPart<T> {
-            protected GridPart(final String caption, final int col1, final int row1, final int col2, final int row2,
-                    final SortedSet<T> set, final IndexedContainer container) {
-                final VerticalLayout slotLayout = addGridPart(caption, col1, row1, col2, row2);
-                final Table table = new Table();
-                table.setWidth(100, UNITS_PERCENTAGE);
-                int height = set.size() * 20 + 25;
-                table.setHeight(height, UNITS_PIXELS);
-                table.setContainerDataSource(container);
-
-                for (final T t : set) {
-                    final Object[] o = getValues(t);
-                    final Item item = table.addItem(o[0]);
-                    for (int i = 1; i < o.length; i += 2) {
-                        item.getItemProperty(o[i]).setValue(o[i + 1]);
-                    }
-                }
-                slotLayout.addComponent(table);
-            }
-
-            protected abstract Object[] getValues(final T t);
-
-        }
-
         private DomainObjectGrid() {
             super(6, 100);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
-        }
-
-        private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
-            final VerticalLayout layout = new VerticalLayout();
-            layout.addComponent(new Label("<h3>" + label + "</h3>", Label.CONTENT_XHTML));
-            addComponent(layout, col1, row1, col2, row2);
-            setComponentAlignment(layout, Alignment.TOP_CENTER);
-            return layout;
         }
 
         @Override
@@ -120,14 +87,22 @@ public class DomainObjectView extends VerticalLayout {
             container.addContainerProperty(VALUE_COLUMN, String.class, null);
             container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
-            new GridPart<Slot>("Value Slots", 1, 0, 5, 0, DomainUtils.getSlots(domainClass), container) {
-                @Override
-                protected Object[] getValues(final Slot slot) {
-                    final String name = slot.getName();
-                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, getSlotValue(slot), TYPE_COLUMN,
-                            slot.getTypeName() };
-                }
-            };
+            VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>Value Slots</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, 1, 0, 5, 0);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+
+            Table table = new Table();
+            table.setSizeFull();
+            table.setPageLength(0);
+            table.setContainerDataSource(container);
+            for (Slot slot : DomainUtils.getSlots(domainClass)) {
+                Item item = table.addItem(slot.getName());
+                item.getItemProperty(SLOT_COLUMN).setValue(slot.getName());
+                item.getItemProperty(VALUE_COLUMN).setValue(getSlotValue(slot));
+                item.getItemProperty(TYPE_COLUMN).setValue(slot.getTypeName());
+            }
+            layout.addComponent(table);
         }
 
         private void addRelationSlots() {
@@ -136,14 +111,22 @@ public class DomainObjectView extends VerticalLayout {
             container.addContainerProperty(VALUE_COLUMN, Link.class, null);
             container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
-            new GridPart<Role>("Relation Slots", 1, 1, 5, 1, DomainUtils.getRelationSlots(domainClass), container) {
-                @Override
-                protected Object[] getValues(final Role role) {
-                    final String name = role.getName();
-                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, new DomainObjectLink(domainObject, role),
-                            TYPE_COLUMN, role.getType().getFullName() };
-                }
-            };
+            VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>Relation Slots</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, 1, 1, 5, 1);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+
+            Table table = new Table();
+            table.setSizeFull();
+            table.setPageLength(0);
+            table.setContainerDataSource(container);
+            for (Role role : DomainUtils.getRelationSlots(domainClass)) {
+                Item item = table.addItem(role.getName());
+                item.getItemProperty(SLOT_COLUMN).setValue(role.getName());
+                item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject, role));
+                item.getItemProperty(TYPE_COLUMN).setValue(role.getType().getFullName());
+            }
+            layout.addComponent(table);
         }
 
         private class DomainRelationListView extends VerticalLayout {
@@ -165,9 +148,8 @@ public class DomainObjectView extends VerticalLayout {
                 container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
                 final Table table = new Table();
-                table.setWidth(100, UNITS_PERCENTAGE);
-                int height = relationSet.size() * 20 + 25;
-                table.setHeight(height, UNITS_PIXELS);
+                table.setSizeFull();
+                table.setPageLength(0);
                 table.setContainerDataSource(container);
 
                 for (final DomainObject domainObject : relationSet) {
@@ -190,22 +172,31 @@ public class DomainObjectView extends VerticalLayout {
             container.addContainerProperty(PLAYS_ROLE_COLUMN, Button.class, null);
             container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
-            new GridPart<Role>("Relation Lists", 0, 2, 5, 2, DomainUtils.getRelationSets(domainClass), container) {
-                @Override
-                protected Object[] getValues(final Role role) {
-                    Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
-                        @Override
-                        public void buttonClick(ClickEvent event) {
-                            showRelationContents(domainObject, DomainUtils.getRelationSet(domainObject, role.getName()),
-                                    role.getName());
-                        }
-                    });
-                    viewRelationButton.addStyleName(BaseTheme.BUTTON_LINK);
+            final VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>Relation Lists</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, 0, 2, 5, 2);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
 
-                    return new Object[] { role.getName(), PLAYS_ROLE_COLUMN, viewRelationButton, TYPE_COLUMN,
-                            role.getType().getFullName() };
-                }
-            };
+            final Table table = new Table();
+            table.setSizeFull();
+            table.setPageLength(0);
+            table.setContainerDataSource(container);
+
+            for (final Role role : DomainUtils.getRelationSets(domainClass)) {
+                Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        showRelationContents(domainObject, DomainUtils.getRelationSet(domainObject, role.getName()),
+                                role.getName());
+                    }
+                });
+                viewRelationButton.addStyleName(BaseTheme.BUTTON_LINK);
+
+                final Item item = table.addItem(role.getName());
+                item.getItemProperty(PLAYS_ROLE_COLUMN).setValue(viewRelationButton);
+                item.getItemProperty(TYPE_COLUMN).setValue(role.getType().getFullName());
+            }
+            layout.addComponent(table);
         }
 
         private void hideRelationContents() {
