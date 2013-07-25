@@ -3,7 +3,6 @@ package module.domainBrowser.presentationTier.component;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedSet;
 
 import module.domainBrowser.domain.DomainUtils;
 import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
@@ -31,47 +30,28 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.BaseTheme;
 
 @SuppressWarnings("serial")
-public class DomainObjectView extends BasicDomainObjectView {
+public class DomainObjectView extends VerticalLayout {
+
+    protected final DomainObject domainObject;
+
+    protected static final String VALUE_COLUMN = "Value";
+    protected static final String SLOT_COLUMN = "Slot Name";
+    protected static final String PLAYS_ROLE_COLUMN = "PlaysRole Name";
+    protected static final String TYPE_COLUMN = "Type";
 
     private class DomainObjectGrid extends GridLayout {
-
-        protected abstract class GridPart<T> {
-            protected GridPart(final String caption, final int col1, final int row1, final int col2, final int row2,
-                    final SortedSet<T> set, final IndexedContainer container) {
-                final VerticalLayout slotLayout = addGridPart(caption, col1, row1, col2, row2);
-                final Table table = createTable(set.size(), container);
-                for (final T t : set) {
-                    final Object[] o = getValues(t);
-                    final Item item = table.addItem(o[0]);
-                    for (int i = 1; i < o.length; i += 2) {
-                        item.getItemProperty(o[i]).setValue(o[i + 1]);
-                    }
-                }
-                slotLayout.addComponent(table);
-            }
-
-            protected abstract Object[] getValues(final T t);
-
-        }
 
         private DomainObjectGrid() {
             super(6, 100);
             setSpacing(true);
             setMargin(true);
             setSizeFull();
-        }
-
-        private VerticalLayout addGridPart(final String label, int col1, int row1, int col2, int row2) {
-            final VerticalLayout layout = new VerticalLayout();
-            layout.addComponent(new Label("<h3>" + label + "</h3>", Label.CONTENT_XHTML));
-            addComponent(layout, col1, row1, col2, row2);
-            setComponentAlignment(layout, Alignment.TOP_CENTER);
-            return layout;
         }
 
         @Override
@@ -102,46 +82,121 @@ public class DomainObjectView extends BasicDomainObjectView {
         }
 
         private void addValueSlots() {
-            new GridPart<Slot>("Value Slots", 1, 0, 5, 0, DomainUtils.getSlots(domainClass), new SlotValueTypeContainer()) {
-                @Override
-                protected Object[] getValues(final Slot slot) {
-                    final String name = slot.getName();
-                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, getSlotValue(slot), TYPE_COLUMN,
-                            slot.getTypeName() };
-                }
-            };
+            IndexedContainer container = new IndexedContainer();
+            container.addContainerProperty(SLOT_COLUMN, String.class, null);
+            container.addContainerProperty(VALUE_COLUMN, String.class, null);
+            container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>Value Slots</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, 1, 0, 5, 0);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+
+            Table table = new Table();
+            table.setSizeFull();
+            table.setPageLength(0);
+            table.setContainerDataSource(container);
+            for (Slot slot : DomainUtils.getSlots(domainClass)) {
+                Item item = table.addItem(slot.getName());
+                item.getItemProperty(SLOT_COLUMN).setValue(slot.getName());
+                item.getItemProperty(VALUE_COLUMN).setValue(getSlotValue(slot));
+                item.getItemProperty(TYPE_COLUMN).setValue(slot.getTypeName());
+            }
+            layout.addComponent(table);
         }
 
         private void addRelationSlots() {
-            new GridPart<Role>("Relation Slots", 1, 1, 5, 1, DomainUtils.getRelationSlots(domainClass),
-                    new SlotDomainObjectContainer()) {
-                @Override
-                protected Object[] getValues(final Role role) {
-                    final String name = role.getName();
-                    return new Object[] { name, SLOT_COLUMN, name, VALUE_COLUMN, new DomainObjectLink(domainObject, role),
-                            TYPE_COLUMN, role.getType().getFullName() };
+            IndexedContainer container = new IndexedContainer();
+            container.addContainerProperty(SLOT_COLUMN, String.class, null);
+            container.addContainerProperty(VALUE_COLUMN, Link.class, null);
+            container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+            VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>Relation Slots</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, 1, 1, 5, 1);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+
+            Table table = new Table();
+            table.setSizeFull();
+            table.setPageLength(0);
+            table.setContainerDataSource(container);
+            for (Role role : DomainUtils.getRelationSlots(domainClass)) {
+                Item item = table.addItem(role.getName());
+                item.getItemProperty(SLOT_COLUMN).setValue(role.getName());
+                item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject, role));
+                item.getItemProperty(TYPE_COLUMN).setValue(role.getType().getFullName());
+            }
+            layout.addComponent(table);
+        }
+
+        private class DomainRelationListView extends VerticalLayout {
+            protected final Set<DomainObject> relationSet;
+            protected final String title;
+
+            public DomainRelationListView(final DomainObject domainObject, final Set<DomainObject> relationSet, String title) {
+                this.relationSet = relationSet;
+                this.title = title;
+            }
+
+            @Override
+            public void attach() {
+                super.attach();
+                addComponent(new Label("<h3>" + title + "</h3>", Label.CONTENT_XHTML));
+
+                IndexedContainer container = new IndexedContainer();
+                container.addContainerProperty(VALUE_COLUMN, Link.class, null);
+                container.addContainerProperty(TYPE_COLUMN, String.class, null);
+
+                final Table table = new Table();
+                table.setSizeFull();
+                table.setPageLength(0);
+                table.setContainerDataSource(container);
+
+                for (final DomainObject domainObject : relationSet) {
+                    final Item item = table.addItem(domainObject.getExternalId());
+                    item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject));
+                    item.getItemProperty(TYPE_COLUMN).setValue(domainObject.getClass().getName());
                 }
-            };
+
+                // a fixed height forces the table to use lazy-loading
+                if (relationSet.size() > 20) {
+                    table.setHeight("300px");
+                }
+
+                addComponent(table);
+            }
         }
 
         private void addRelationSets() {
-            new GridPart<Role>("Relation Lists", 0, 2, 5, 2, DomainUtils.getRelationSets(domainClass),
-                    new RelationListButtonContainer()) {
-                @Override
-                protected Object[] getValues(final Role role) {
-                    Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
-                        @Override
-                        public void buttonClick(ClickEvent event) {
-                            showRelationContents(domainObject, DomainUtils.getRelationSet(domainObject, role.getName()),
-                                    role.getName());
-                        }
-                    });
-                    viewRelationButton.addStyleName(BaseTheme.BUTTON_LINK);
+            IndexedContainer container = new IndexedContainer();
+            container.addContainerProperty(PLAYS_ROLE_COLUMN, Button.class, null);
+            container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
-                    return new Object[] { role.getName(), PLAYS_ROLE_COLUMN, viewRelationButton, TYPE_COLUMN,
-                            role.getType().getFullName() };
-                }
-            };
+            final VerticalLayout layout = new VerticalLayout();
+            layout.addComponent(new Label("<h3>Relation Lists</h3>", Label.CONTENT_XHTML));
+            addComponent(layout, 0, 2, 5, 2);
+            setComponentAlignment(layout, Alignment.TOP_CENTER);
+
+            final Table table = new Table();
+            table.setSizeFull();
+            table.setPageLength(0);
+            table.setContainerDataSource(container);
+
+            for (final Role role : DomainUtils.getRelationSets(domainClass)) {
+                Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
+                    @Override
+                    public void buttonClick(ClickEvent event) {
+                        showRelationContents(domainObject, DomainUtils.getRelationSet(domainObject, role.getName()),
+                                role.getName());
+                    }
+                });
+                viewRelationButton.addStyleName(BaseTheme.BUTTON_LINK);
+
+                final Item item = table.addItem(role.getName());
+                item.getItemProperty(PLAYS_ROLE_COLUMN).setValue(viewRelationButton);
+                item.getItemProperty(TYPE_COLUMN).setValue(role.getType().getFullName());
+            }
+            layout.addComponent(table);
         }
 
         private void hideRelationContents() {
@@ -154,6 +209,7 @@ public class DomainObjectView extends BasicDomainObjectView {
             removeComponent(0, 3);
             DomainRelationListView relationViewer =
                     new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
+
             addComponent(relationViewer, 0, 3, 5, 3);
         }
 
@@ -210,7 +266,8 @@ public class DomainObjectView extends BasicDomainObjectView {
     private final DomainClass domainClass;
 
     public DomainObjectView(final DomainObject domainObject) {
-        super(domainObject);
+        super();
+        this.domainObject = domainObject;
         final DomainModel domainModel = FenixFramework.getDomainModel();
         domainClass = domainModel.findClass(domainObject.getClass().getName());
     }
@@ -218,6 +275,14 @@ public class DomainObjectView extends BasicDomainObjectView {
     @Override
     public void attach() {
         super.attach();
+
+        final StringBuilder builder = new StringBuilder("<h3>Browsing object - ");
+        builder.append(domainObject.getClass().getName());
+        builder.append(":");
+        builder.append(domainObject.getExternalId());
+        builder.append("</h3>");
+        addComponent(new Label(builder.toString(), Label.CONTENT_XHTML));
+
         final DomainObjectGrid grid = new DomainObjectGrid();
         addComponent(grid);
         setComponentAlignment(grid, Alignment.MIDDLE_CENTER);
