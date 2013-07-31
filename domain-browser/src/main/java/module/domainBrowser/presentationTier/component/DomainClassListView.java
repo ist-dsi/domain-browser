@@ -116,10 +116,10 @@ public class DomainClassListView extends VerticalLayout {
 
         //The BeanItemContainer discovers the properties by using reflection to search for public getters
         //Methods discovered by reflection are in an arbitrary order
-        //This code orders the columns manually (by the order they are added)
         final BeanItemContainer<DomainMetaClassBean> container =
                 new BeanItemContainer<DomainMetaClassBean>(DomainMetaClassBean.class, metaClassBeans) {
                     {
+                        //This code orders the columns manually (by the order they are added)
                         removeContainerProperty("className");
                         removeContainerProperty("objects");
                         removeContainerProperty("predicates");
