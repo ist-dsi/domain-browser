@@ -26,6 +26,7 @@ import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
@@ -40,6 +41,8 @@ public class DomainObjectView extends GridLayout {
     private final DomainClass domainClass;
     protected final DomainObject domainObject;
 
+    private Component relationListView;
+
     protected static final String VALUE_COLUMN = "Value";
     protected static final String SLOT_COLUMN = "Slot Name";
     protected static final String PLAYS_ROLE_COLUMN = "PlaysRole Name";
@@ -50,7 +53,7 @@ public class DomainObjectView extends GridLayout {
         setSpacing(true);
         setMargin(true);
         setSizeFull();
-        
+
         this.domainObject = domainObject;
         domainClass = FenixFramework.getDomainModel().findClass(domainObject.getClass().getName());
     }
@@ -206,17 +209,15 @@ public class DomainObjectView extends GridLayout {
     }
 
     private void hideRelationContents() {
-        removeComponent(0, 3);
-        Label label = new Label("Pick a relation from the table above to view its contents");
-        addComponent(label, 0, 4, 5, 4);
+        removeComponent(relationListView);
+        relationListView = new Label("Pick a relation from the table above to view its contents");
+        addComponent(relationListView, 0, 4, 5, 4);
     }
 
     private void showRelationContents(DomainObject domainObject, Set<DomainObject> relationSet, String playsRole) {
-        removeComponent(0, 3);
-        DomainRelationListView relationViewer =
-                new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
-
-        addComponent(relationViewer, 0, 4, 5, 4);
+        removeComponent(relationListView);
+        relationListView = new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
+        addComponent(relationListView, 0, 4, 5, 4);
     }
 
     private void addConsistencyPredicates() {
