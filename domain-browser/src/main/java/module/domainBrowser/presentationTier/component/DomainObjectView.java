@@ -229,7 +229,7 @@ public class DomainObjectView extends GridLayout {
             Label predicateName =
                     new Label(predicate.getDeclaringClass().getName() + ".<b>" + predicate.getName() + "()</b>",
                             Label.CONTENT_XHTML);
-            addComponent(predicateName, 0, 5 + iteration * 2, 4, 5 + iteration * 2);
+            addComponent(predicateName, 0, 6 + iteration * 2, 4, 6 + iteration * 2);
             setComponentAlignment(predicateName, Alignment.BOTTOM_LEFT);
 
             Embedded predicateResult;
