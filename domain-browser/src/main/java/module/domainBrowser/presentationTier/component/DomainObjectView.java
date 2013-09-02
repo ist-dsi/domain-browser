@@ -67,7 +67,12 @@ public class DomainObjectView extends GridLayout {
         classHeader.setSpacing(true);
         classHeader.addComponent(new Label("class"));
         if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
-            classHeader.addComponent(new DomainClassLink(DomainMetaClass.readDomainMetaClass(domainObject.getClass())));
+            DomainMetaClass metaClass = DomainMetaClass.readDomainMetaClass(domainObject.getClass());
+            if (metaClass != null) {
+                classHeader.addComponent(new DomainClassLink(metaClass));
+            } else {
+                classHeader.addComponent(new Label(domainObject.getClass().getName()));
+            }
         } else {
             classHeader.addComponent(new Label(domainObject.getClass().getName()));
         }
