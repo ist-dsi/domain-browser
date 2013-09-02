@@ -29,6 +29,8 @@ import com.vaadin.ui.VerticalLayout;
 @SuppressWarnings("serial")
 public class DomainClassView extends GridLayout {
 
+    private final DomainMetaClass metaClass;
+
     private class MetaObjectCollectionWrapper implements Collection<DomainMetaObject> {
 
         private final DomainMetaClass metaClass;
@@ -144,11 +146,20 @@ public class DomainClassView extends GridLayout {
         }
     }
 
-    public DomainClassView(final DomainMetaClass metaClass) {
+    public DomainClassView(DomainMetaClass metaClass) {
         super(3, 100);
         setSpacing(true);
         setSizeFull();
+        this.metaClass = metaClass;
 
+        addHeader();
+
+        addObjects();
+
+        addPredicates();
+    }
+
+    private void addHeader() {
         addComponent(new Label(metaClass.getDomainClass().getPackage().toString()), 0, 0, 2, 0);
 
         HorizontalLayout titleLayout = new HorizontalLayout();
@@ -168,7 +179,9 @@ public class DomainClassView extends GridLayout {
             titleLayout.setComponentAlignment(superClassLink, Alignment.MIDDLE_LEFT);
         }
         addComponent(titleLayout, 0, 1, 2, 1);
+    }
 
+    private void addObjects() {
         Label objectsTitle = new Label("<h3>Objects</h3>", Label.CONTENT_XHTML);
         addComponent(objectsTitle, 0, 2, 2, 2);
 
@@ -229,23 +242,48 @@ public class DomainClassView extends GridLayout {
                 }
             }
         };
+        thread.start();
+    }
 
+    private void addPredicates() {
         addComponent(new Label("<br/><h3>Consistency Predicates</h3>", Label.CONTENT_XHTML), 0, 5, 2, 5);
         addComponent(new Label(metaClass.getAllConsistencyPredicates().size() + " total (including inherited)"), 0, 6, 0, 6);
         addComponent(new Label(metaClass.getDeclaredConsistencyPredicateSet().size() + " declared"), 1, 6, 1, 6);
         addComponent(new Label(getConsistencyPredicatesWithInconsistencies(metaClass).size() + " inconsistent"), 2, 6, 2, 6);
 
-        int iteration = 0;
-        for (DomainConsistencyPredicate predicate : metaClass.getAllConsistencyPredicates()) {
-            Label predicateName =
-                    new Label(predicate.getDomainMetaClass().getDomainClass().getName() + ".<b>"
-                            + predicate.getPredicate().getName() + "()</b>", Label.CONTENT_XHTML);
-            addComponent(predicateName, 0, 7 + iteration, 2, 7 + iteration);
-            setComponentAlignment(predicateName, Alignment.BOTTOM_LEFT);
-            iteration++;
-        }
-
-        thread.start();
+        final BeanItemContainer<DomainConsistencyPredicate> container =
+                new BeanItemContainer<DomainConsistencyPredicate>(DomainConsistencyPredicate.class,
+                        metaClass.getAllConsistencyPredicates());
+        //Clear all properties; use only the table's generated columns
+        container.getContainerPropertyIds().clear();
+        Table predicatesTable = new Table();
+        predicatesTable.setSizeFull();
+        predicatesTable.setPageLength((container.size() > 15) ? 15 : 0);
+        predicatesTable.setContainerDataSource(container);
+        predicatesTable.addGeneratedColumn("Predicate", new ColumnGenerator() {
+            @Override
+            public Object generateCell(Table source, Object itemId, Object columnId) {
+                DomainConsistencyPredicate predicate = (DomainConsistencyPredicate) itemId;
+                Label label =
+                        new Label(predicate.getDomainMetaClass().getDomainClass().getName() + ".<b>"
+                                + predicate.getPredicate().getName() + "()</b>", Label.CONTENT_XHTML);
+                label.setSizeUndefined();
+                return label;
+            }
+        });
+        predicatesTable.addGeneratedColumn("Affected Objects", new ColumnGenerator() {
+            @Override
+            public Object generateCell(Table source, Object itemId, Object columnId) {
+                return DomainUtils.getAffectedObjectsCount((DomainConsistencyPredicate) itemId);
+            }
+        });
+        predicatesTable.addGeneratedColumn("Inconsistent Objects", new ColumnGenerator() {
+            @Override
+            public Object generateCell(Table source, Object itemId, Object columnId) {
+                return ((DomainConsistencyPredicate) itemId).getInconsistentDependenceRecordSet().size();
+            }
+        });
+        addComponent(predicatesTable, 0, 7, 2, 7);
     }
 
     private static Collection<DomainConsistencyPredicate> getConsistencyPredicatesWithInconsistencies(DomainMetaClass metaClass) {
