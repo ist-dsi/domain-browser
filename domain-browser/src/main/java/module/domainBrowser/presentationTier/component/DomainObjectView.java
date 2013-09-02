@@ -5,10 +5,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import module.domainBrowser.domain.DomainUtils;
+import module.domainBrowser.domain.DomainUtils.DomainClassLink;
 import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
 
 import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
+import pt.ist.fenixframework.DomainMetaClass;
 import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
@@ -29,6 +31,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
@@ -60,10 +63,17 @@ public class DomainObjectView extends GridLayout {
     @Override
     public void attach() {
         super.attach();
+        HorizontalLayout classHeader = new HorizontalLayout();
+        classHeader.setSpacing(true);
+        classHeader.addComponent(new Label("class"));
+        if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+            classHeader.addComponent(new DomainClassLink(DomainMetaClass.readDomainMetaClass(domainObject.getClass())));
+        } else {
+            classHeader.addComponent(new Label(domainObject.getClass().getName()));
+        }
+        addComponent(classHeader, 0, 0, 5, 0);
 
-        String label = "<h3>Browsing object - " + domainObject.getClass().getName();
-        label += ":" + domainObject.getExternalId() + "</h3>";
-        addComponent(new Label(label, Label.CONTENT_XHTML), 0, 0, 5, 0);
+        addComponent(new Label("<h2>object " + domainObject.getExternalId() + "</h2>", Label.CONTENT_XHTML), 0, 1, 5, 1);
 
         addChart();
         addValueSlots();
@@ -85,7 +95,7 @@ public class DomainObjectView extends GridLayout {
         }
         chart.setSizeFull();
         chart.setVisible(true);
-        addComponent(chart, 0, 1, 0, 2);
+        addComponent(chart, 0, 2, 0, 3);
         setComponentAlignment(chart, Alignment.TOP_LEFT);
     }
 
@@ -97,7 +107,7 @@ public class DomainObjectView extends GridLayout {
 
         VerticalLayout layout = new VerticalLayout();
         layout.addComponent(new Label("<h3>Value Slots</h3>", Label.CONTENT_XHTML));
-        addComponent(layout, 1, 1, 5, 1);
+        addComponent(layout, 1, 2, 5, 2);
         setComponentAlignment(layout, Alignment.TOP_CENTER);
 
         Table table = new Table();
@@ -122,7 +132,7 @@ public class DomainObjectView extends GridLayout {
 
         VerticalLayout layout = new VerticalLayout();
         layout.addComponent(new Label("<h3>Relation Slots</h3>", Label.CONTENT_XHTML));
-        addComponent(layout, 1, 2, 5, 2);
+        addComponent(layout, 1, 3, 5, 3);
         setComponentAlignment(layout, Alignment.TOP_CENTER);
 
         Table table = new Table();
@@ -183,7 +193,7 @@ public class DomainObjectView extends GridLayout {
 
         VerticalLayout layout = new VerticalLayout();
         layout.addComponent(new Label("<h3>Relation Lists</h3>", Label.CONTENT_XHTML));
-        addComponent(layout, 0, 3, 5, 3);
+        addComponent(layout, 0, 4, 5, 4);
         setComponentAlignment(layout, Alignment.TOP_CENTER);
 
         Table table = new Table();
@@ -210,25 +220,25 @@ public class DomainObjectView extends GridLayout {
     private void hideRelationContents() {
         removeComponent(relationListView);
         relationListView = new Label("Pick a relation from the table above to view its contents");
-        addComponent(relationListView, 0, 4, 5, 4);
+        addComponent(relationListView, 0, 5, 5, 5);
     }
 
     private void showRelationContents(Set<DomainObject> relationSet, String playsRole) {
         removeComponent(relationListView);
         relationListView = new DomainObjectListView(relationSet, "Contents of relation: " + playsRole);
-        addComponent(relationListView, 0, 4, 5, 4);
+        addComponent(relationListView, 0, 5, 5, 5);
     }
 
     private void addConsistencyPredicates() {
         Label title = new Label("<h3>Consistency Predicates:</h3>", Label.CONTENT_XHTML);
-        addComponent(title, 0, 5, 5, 5);
+        addComponent(title, 0, 6, 5, 6);
 
         int iteration = 0;
         for (Method predicate : ConsistencyPredicateSystem.getPredicatesFor(domainObject)) {
             Label predicateName =
                     new Label(predicate.getDeclaringClass().getName() + ".<b>" + predicate.getName() + "()</b>",
                             Label.CONTENT_XHTML);
-            addComponent(predicateName, 0, 6 + iteration * 2, 4, 6 + iteration * 2);
+            addComponent(predicateName, 0, 7 + iteration * 2, 4, 7 + iteration * 2);
             setComponentAlignment(predicateName, Alignment.BOTTOM_LEFT);
 
             Embedded predicateResult;
@@ -243,7 +253,7 @@ public class DomainObjectView extends GridLayout {
             } catch (Exception ex) {
                 predicateResult = new Embedded(null, new ThemeResource("icons/incorrect.gif"));
             }
-            addComponent(predicateResult, 5, 6 + iteration * 2, 5, 6 + iteration * 2);
+            addComponent(predicateResult, 5, 7 + iteration * 2, 5, 7 + iteration * 2);
             setComponentAlignment(predicateResult, Alignment.BOTTOM_LEFT);
 
             if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
@@ -259,7 +269,7 @@ public class DomainObjectView extends GridLayout {
                     }
 
                     DomainObjectListView relationViewer = new DomainObjectListView(dependedObjs, "Depends on:");
-                    addComponent(relationViewer, 0, 7 + iteration * 2, 5, 7 + iteration * 2);
+                    addComponent(relationViewer, 0, 8 + iteration * 2, 5, 8 + iteration * 2);
                 }
             }
 

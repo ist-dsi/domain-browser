@@ -84,6 +84,11 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
     }
 
     private void viewDomainClass(String className) {
+        if (!ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+            changeDomainView(new Label(
+                    "To view domain class information, the fenix framework must be configured to create meta objects (see Config.canCreateDomainMetaObjects)"));
+            return;
+        }
         try {
             Class<? extends DomainObject> targetClass = (Class<? extends DomainObject>) Class.forName(className);
             if (DomainObject.class.isAssignableFrom(targetClass)) {
