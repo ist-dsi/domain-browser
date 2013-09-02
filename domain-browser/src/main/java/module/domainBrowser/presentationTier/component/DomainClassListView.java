@@ -91,6 +91,7 @@ public class DomainClassListView extends VerticalLayout {
     public DomainClassListView(String classSearch) {
         super();
         setSpacing(true);
+        classSearch = classSearch.trim();
 
         Label header;
         Collection<DomainMetaClassBean> metaClassBeans;
