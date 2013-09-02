@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import pt.ist.bennu.core.applicationTier.Authenticate.UserView;
 import pt.ist.bennu.core.domain.RoleType;
 import pt.ist.bennu.core.domain.User;
+import pt.ist.fenixframework.DomainMetaClass;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicatesConfig;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
@@ -71,14 +72,28 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
 
     @Override
     public boolean isAllowedToOpen(final Map<String, String> arg0) {
-        final User user = UserView.getCurrentUser();
+        User user = UserView.getCurrentUser();
         return user != null && user.hasRoleType(RoleType.MANAGER);
     }
 
     private void viewDomainObject(String id) {
-        final DomainObject domainObject = DomainUtils.readDomainObject(id);
+        DomainObject domainObject = DomainUtils.readDomainObject(id);
         if (domainObject != null) {
             changeDomainView(new DomainObjectView(domainObject));
+        }
+    }
+
+    private void viewDomainClass(String className) {
+        try {
+            Class<? extends DomainObject> targetClass = (Class<? extends DomainObject>) Class.forName(className);
+            if (DomainObject.class.isAssignableFrom(targetClass)) {
+                DomainMetaClass metaClass = DomainMetaClass.readDomainMetaClass(targetClass);
+                if (metaClass != null) {
+                    changeDomainView(new DomainClassView(metaClass));
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -93,7 +108,15 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
     @Override
     public void setArguments(final Map<String, String> args) {
         if (args != null) {
-            viewDomainObject(args.get("externalId"));
+            String externalId = args.get("externalId");
+            if (!StringUtils.isEmpty(externalId)) {
+                viewDomainObject(externalId);
+                return;
+            }
+            String className = args.get("className");
+            if (!StringUtils.isEmpty(className)) {
+                viewDomainClass(className);
+            }
         }
     }
 

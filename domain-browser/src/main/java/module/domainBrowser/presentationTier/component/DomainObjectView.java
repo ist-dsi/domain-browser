@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import module.domainBrowser.domain.DomainUtils;
-import module.domainBrowser.presentationTier.component.links.DomainObjectLink;
+import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
 
 import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
@@ -51,7 +51,6 @@ public class DomainObjectView extends GridLayout {
     public DomainObjectView(DomainObject domainObject) {
         super(6, 100);
         setSpacing(true);
-        setMargin(true);
         setSizeFull();
 
         this.domainObject = domainObject;
@@ -133,17 +132,17 @@ public class DomainObjectView extends GridLayout {
         for (Role role : DomainUtils.getRelationSlots(domainClass)) {
             Item item = table.addItem(role.getName());
             item.getItemProperty(SLOT_COLUMN).setValue(role.getName());
-            item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject, role));
+            item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(DomainUtils.getRelationSlot(domainObject, role)));
             item.getItemProperty(TYPE_COLUMN).setValue(role.getType().getFullName());
         }
         layout.addComponent(table);
     }
 
-    private class DomainRelationListView extends VerticalLayout {
+    private class DomainObjectListView extends VerticalLayout {
         protected final Set<DomainObject> relationSet;
         protected final String title;
 
-        public DomainRelationListView(final DomainObject domainObject, final Set<DomainObject> relationSet, String title) {
+        public DomainObjectListView(Set<DomainObject> relationSet, String title) {
             this.relationSet = relationSet;
             this.title = title;
         }
@@ -157,13 +156,13 @@ public class DomainObjectView extends GridLayout {
             container.addContainerProperty(VALUE_COLUMN, Link.class, null);
             container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
-            final Table table = new Table();
+            Table table = new Table();
             table.setSizeFull();
             table.setPageLength(0);
             table.setContainerDataSource(container);
 
-            for (final DomainObject domainObject : relationSet) {
-                final Item item = table.addItem(domainObject.getExternalId());
+            for (DomainObject domainObject : relationSet) {
+                Item item = table.addItem(domainObject.getExternalId());
                 item.getItemProperty(VALUE_COLUMN).setValue(new DomainObjectLink(domainObject));
                 item.getItemProperty(TYPE_COLUMN).setValue(domainObject.getClass().getName());
             }
@@ -182,12 +181,12 @@ public class DomainObjectView extends GridLayout {
         container.addContainerProperty(PLAYS_ROLE_COLUMN, Button.class, null);
         container.addContainerProperty(TYPE_COLUMN, String.class, null);
 
-        final VerticalLayout layout = new VerticalLayout();
+        VerticalLayout layout = new VerticalLayout();
         layout.addComponent(new Label("<h3>Relation Lists</h3>", Label.CONTENT_XHTML));
         addComponent(layout, 0, 3, 5, 3);
         setComponentAlignment(layout, Alignment.TOP_CENTER);
 
-        final Table table = new Table();
+        Table table = new Table();
         table.setSizeFull();
         table.setPageLength(0);
         table.setContainerDataSource(container);
@@ -196,12 +195,12 @@ public class DomainObjectView extends GridLayout {
             Button viewRelationButton = new Button(role.getName(), new Button.ClickListener() {
                 @Override
                 public void buttonClick(ClickEvent event) {
-                    showRelationContents(domainObject, DomainUtils.getRelationSet(domainObject, role.getName()), role.getName());
+                    showRelationContents(DomainUtils.getRelationSet(domainObject, role.getName()), role.getName());
                 }
             });
             viewRelationButton.addStyleName(BaseTheme.BUTTON_LINK);
 
-            final Item item = table.addItem(role.getName());
+            Item item = table.addItem(role.getName());
             item.getItemProperty(PLAYS_ROLE_COLUMN).setValue(viewRelationButton);
             item.getItemProperty(TYPE_COLUMN).setValue(role.getType().getFullName());
         }
@@ -214,9 +213,9 @@ public class DomainObjectView extends GridLayout {
         addComponent(relationListView, 0, 4, 5, 4);
     }
 
-    private void showRelationContents(DomainObject domainObject, Set<DomainObject> relationSet, String playsRole) {
+    private void showRelationContents(Set<DomainObject> relationSet, String playsRole) {
         removeComponent(relationListView);
-        relationListView = new DomainRelationListView(domainObject, relationSet, "Contents of relation: " + playsRole);
+        relationListView = new DomainObjectListView(relationSet, "Contents of relation: " + playsRole);
         addComponent(relationListView, 0, 4, 5, 4);
     }
 
@@ -259,7 +258,7 @@ public class DomainObjectView extends GridLayout {
                         dependedObjs.add(dependedMeta.getDomainObject());
                     }
 
-                    DomainRelationListView relationViewer = new DomainRelationListView(domainObject, dependedObjs, "Depends on:");
+                    DomainObjectListView relationViewer = new DomainObjectListView(dependedObjs, "Depends on:");
                     addComponent(relationViewer, 0, 7 + iteration * 2, 5, 7 + iteration * 2);
                 }
             }

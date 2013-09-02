@@ -17,6 +17,11 @@
     <name>domain-browser</name>
 
     <properties>
+    	<!-- Version-forced libs -->
+        <version.pt.ist.fenix.framework>2.2.0</version.pt.ist.fenix.framework>
+        <version.pt.ist.ff.maven.plugin>2.2.0</version.pt.ist.ff.maven.plugin>
+        <version.fenix.framework>2.2.0</version.fenix.framework>
+        
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -37,6 +42,11 @@
             <artifactId>bennu-vaadin</artifactId>
             <version>1.1.0</version>
         </dependency>
+        <dependency>
+   			<groupId>org.vaadin.addons</groupId>
+   			<artifactId>pagedtable</artifactId>
+   			<version>0.6.3</version>
+		</dependency>
     </dependencies>
 
     <repositories>
@@ -44,6 +54,10 @@
             <id>fenix-ashes-maven-repository</id>
             <url>https://fenix-ashes.ist.utl.pt/nexus/content/groups/fenix-ashes-maven-repository</url>
         </repository>
+		<repository>
+   			<id>vaadin-addons</id>
+   			<url>http://maven.vaadin.com/vaadin-addons</url>
+		</repository>
     </repositories>
 
 </project>
