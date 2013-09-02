@@ -151,6 +151,11 @@ public class DomainClassView extends GridLayout {
         setSpacing(true);
         setSizeFull();
         this.metaClass = metaClass;
+    }
+
+    @Override
+    public void attach() {
+        super.attach();
 
         addHeader();
 
