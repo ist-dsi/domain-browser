@@ -30,6 +30,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.ProgressIndicator;
+import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.VerticalLayout;
@@ -306,13 +307,19 @@ public class DomainClassView extends GridLayout {
 
     private void addPredicates() {
         addComponent(new Label("<br/><h3>Consistency Predicates</h3>", Label.CONTENT_XHTML), 0, 6, 2, 6);
-        addComponent(new Label(metaClass.getAllConsistencyPredicates().size() + " total (including inherited)"), 0, 7, 0, 7);
-        addComponent(new Label(metaClass.getDeclaredConsistencyPredicateSet().size() + " declared"), 1, 7, 1, 7);
-        addComponent(new Label(getConsistencyPredicatesWithInconsistencies(metaClass).size() + " inconsistent"), 2, 7, 2, 7);
+        TabSheet tabs = new TabSheet();
+        tabs.addTab(createPredicatesTable(metaClass.getAllConsistencyPredicates()), metaClass.getAllConsistencyPredicates()
+                .size() + " total (including inherited)");
+        tabs.addTab(createPredicatesTable(metaClass.getDeclaredConsistencyPredicateSet()), metaClass
+                .getDeclaredConsistencyPredicateSet().size() + " declared");
+        tabs.addTab(createPredicatesTable(getConsistencyPredicatesWithInconsistencies(metaClass)),
+                getConsistencyPredicatesWithInconsistencies(metaClass).size() + " inconsistent");
+        addComponent(tabs, 0, 7, 2, 7);
+    }
 
+    private Table createPredicatesTable(Collection<DomainConsistencyPredicate> predicates) {
         final BeanItemContainer<DomainConsistencyPredicate> container =
-                new BeanItemContainer<DomainConsistencyPredicate>(DomainConsistencyPredicate.class,
-                        metaClass.getAllConsistencyPredicates());
+                new BeanItemContainer<DomainConsistencyPredicate>(DomainConsistencyPredicate.class, predicates);
         //Clear all properties; use only the table's generated columns
         container.getContainerPropertyIds().clear();
         Table predicatesTable = new Table();
@@ -342,7 +349,7 @@ public class DomainClassView extends GridLayout {
                 return ((DomainConsistencyPredicate) itemId).getInconsistentDependenceRecordSet().size();
             }
         });
-        addComponent(predicatesTable, 0, 8, 2, 8);
+        return predicatesTable;
     }
 
     private static Collection<DomainConsistencyPredicate> getConsistencyPredicatesWithInconsistencies(DomainMetaClass metaClass) {
