@@ -4,15 +4,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import module.domainBrowser.domain.DomainUtils;
 import module.domainBrowser.domain.DomainUtils.DomainClassLink;
 import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
+
+import org.vaadin.vaadinvisualizations.OrganizationalChart;
+
 import pt.ist.fenixframework.Atomic;
 import pt.ist.fenixframework.DomainMetaClass;
 import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
 import pt.ist.fenixframework.consistencyPredicates.DomainDependenceRecord;
+import pt.ist.vaadinframework.EmbeddedApplication;
 
 import com.google.common.collect.Iterators;
 import com.jensjansson.pagedtable.PagedTable;
@@ -21,6 +28,7 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Panel;
 import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
@@ -158,43 +166,89 @@ public class DomainClassView extends GridLayout {
         super.attach();
 
         addHeader();
-
+        addChart();
         addObjects();
-
         addPredicates();
     }
 
     private void addHeader() {
         addComponent(new Label(metaClass.getDomainClass().getPackage().toString()), 0, 0, 2, 0);
 
-        HorizontalLayout titleLayout = new HorizontalLayout();
-        titleLayout.setSpacing(true);
-        titleLayout.setSizeFull();
         Label titleLabel = new Label("<h2>class " + metaClass.getDomainClass().getSimpleName() + "</h2>", Label.CONTENT_XHTML);
         titleLabel.setSizeUndefined();
-        titleLayout.addComponent(titleLabel);
-        if (metaClass.getDomainMetaSuperclass() != null) {
-            Label extendsLabel = new Label("extends");
-            extendsLabel.setSizeUndefined();
-            titleLayout.addComponent(extendsLabel);
-            titleLayout.setComponentAlignment(extendsLabel, Alignment.MIDDLE_RIGHT);
-            DomainClassLink superClassLink = new DomainClassLink(metaClass.getDomainMetaSuperclass());
-            superClassLink.setSizeUndefined();
-            titleLayout.addComponent(superClassLink);
-            titleLayout.setComponentAlignment(superClassLink, Alignment.MIDDLE_LEFT);
+        addComponent(titleLabel, 0, 1, 2, 1);
+    }
+
+    private void addChart() {
+        Panel panel = new Panel();
+        panel.setSizeFull();
+
+        OrganizationalChart chart = new OrganizationalChart();
+        final Map<String, String> fullClassNameMap = new TreeMap<String, String>();
+        chart.setOption("size", "medium");
+
+        int levelCount = 1;
+        DomainMetaClass metaSuperclass = metaClass.getDomainMetaSuperclass();
+        String className = "> " + metaClass.getDomainClass().getSimpleName() + " <";
+        String fullClassName = metaClass.getDomainClass().getName();
+        chart.add(className, metaSuperclass == null ? "" : metaSuperclass.getDomainClass().getSimpleName(), fullClassName);
+        fullClassNameMap.put(className, fullClassName);
+        if (metaSuperclass != null) {
+            className = metaSuperclass.getDomainClass().getSimpleName();
+            fullClassName = metaSuperclass.getDomainClass().getName();
+            chart.add(className, "", fullClassName);
+            fullClassNameMap.put(className, fullClassName);
+            levelCount++;
         }
-        addComponent(titleLayout, 0, 1, 2, 1);
+        if (!metaClass.getDomainMetaSubclassSet().isEmpty()) {
+            levelCount++;
+            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
+                className = metaSubclass.getDomainClass().getSimpleName();
+                fullClassName = metaSubclass.getDomainClass().getName();
+                chart.add(className, "> " + metaClass.getDomainClass().getSimpleName() + " <", fullClassName);
+                fullClassNameMap.put(className, fullClassName);
+            }
+        }
+
+        // The inner layout of the panel needs an undefined size to allow horizontal scroll
+        panel.getContent().setSizeUndefined();
+        // The inner layout of the panel must have a shorter height than the panel itself
+        // to make space for the horizontal scroll bar 
+        panel.setHeight(20 + 70 * levelCount, UNITS_PIXELS);
+        panel.getContent().setHeight(70 * levelCount, UNITS_PIXELS);
+
+        chart.setHeight(70 * levelCount, UNITS_PIXELS);
+        if (metaClass.getDomainMetaSubclassSet().isEmpty()) {
+            chart.setWidth(230, UNITS_PIXELS);
+        } else {
+            chart.setWidth(230 * metaClass.getDomainMetaSubclassSet().size(), UNITS_PIXELS);
+        }
+
+        chart.addListener(new OrganizationalChart.SelectionListener() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void selectionChanged(List<String> selectedItems) {
+                if (!selectedItems.isEmpty()) {
+                    EmbeddedApplication.open(getApplication(), DomainBrowser.class, null, null, null,
+                            fullClassNameMap.get(selectedItems.get(0)));
+                }
+            }
+        });
+
+        panel.addComponent(chart);
+        addComponent(panel, 0, 2, 2, 2);
     }
 
     private void addObjects() {
         Label objectsTitle = new Label("<h3>Objects</h3>", Label.CONTENT_XHTML);
-        addComponent(objectsTitle, 0, 2, 2, 2);
+        addComponent(objectsTitle, 0, 3, 2, 3);
 
-        addComponent(new Label(DomainUtils.getObjectCountIncludingSubclasses(metaClass) + " total"), 0, 3, 0, 3);
+        addComponent(new Label(DomainUtils.getObjectCountIncludingSubclasses(metaClass) + " total"), 0, 4, 0, 4);
 
-        addComponent(new Label(metaClass.getExistingDomainMetaObjectsCount() + " excluding subclasses"), 1, 3, 1, 3);
+        addComponent(new Label(metaClass.getExistingDomainMetaObjectsCount() + " excluding subclasses"), 1, 4, 1, 4);
 
-        addComponent(new Label(DomainUtils.getInconsistencyCount(metaClass) + " inconsistent"), 2, 3, 2, 3);
+        addComponent(new Label(DomainUtils.getInconsistencyCount(metaClass) + " inconsistent"), 2, 4, 2, 4);
 
         final MetaObjectCollectionWrapper existingObjects = new MetaObjectCollectionWrapper(metaClass);
         final BeanItemContainer<DomainMetaObject> container = new BeanItemContainer<DomainMetaObject>(DomainMetaObject.class);
@@ -225,7 +279,7 @@ public class DomainClassView extends GridLayout {
         progress.setEnabled(true);
         objectsLayout.addComponent(progress);
         objectsLayout.setComponentAlignment(progress, Alignment.MIDDLE_CENTER);
-        addComponent(objectsLayout, 0, 4, 2, 4);
+        addComponent(objectsLayout, 0, 5, 2, 5);
 
         Thread thread = new Thread() {
             @Override
@@ -251,10 +305,10 @@ public class DomainClassView extends GridLayout {
     }
 
     private void addPredicates() {
-        addComponent(new Label("<br/><h3>Consistency Predicates</h3>", Label.CONTENT_XHTML), 0, 5, 2, 5);
-        addComponent(new Label(metaClass.getAllConsistencyPredicates().size() + " total (including inherited)"), 0, 6, 0, 6);
-        addComponent(new Label(metaClass.getDeclaredConsistencyPredicateSet().size() + " declared"), 1, 6, 1, 6);
-        addComponent(new Label(getConsistencyPredicatesWithInconsistencies(metaClass).size() + " inconsistent"), 2, 6, 2, 6);
+        addComponent(new Label("<br/><h3>Consistency Predicates</h3>", Label.CONTENT_XHTML), 0, 6, 2, 6);
+        addComponent(new Label(metaClass.getAllConsistencyPredicates().size() + " total (including inherited)"), 0, 7, 0, 7);
+        addComponent(new Label(metaClass.getDeclaredConsistencyPredicateSet().size() + " declared"), 1, 7, 1, 7);
+        addComponent(new Label(getConsistencyPredicatesWithInconsistencies(metaClass).size() + " inconsistent"), 2, 7, 2, 7);
 
         final BeanItemContainer<DomainConsistencyPredicate> container =
                 new BeanItemContainer<DomainConsistencyPredicate>(DomainConsistencyPredicate.class,
@@ -288,7 +342,7 @@ public class DomainClassView extends GridLayout {
                 return ((DomainConsistencyPredicate) itemId).getInconsistentDependenceRecordSet().size();
             }
         });
-        addComponent(predicatesTable, 0, 7, 2, 7);
+        addComponent(predicatesTable, 0, 8, 2, 8);
     }
 
     private static Collection<DomainConsistencyPredicate> getConsistencyPredicatesWithInconsistencies(DomainMetaClass metaClass) {

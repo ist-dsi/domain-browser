@@ -2,15 +2,16 @@ package module.domainBrowser.presentationTier.component;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import module.domainBrowser.domain.DomainUtils;
-import module.domainBrowser.domain.DomainUtils.DomainClassLink;
 import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
 
 import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
-import pt.ist.fenixframework.DomainMetaClass;
 import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
@@ -21,6 +22,7 @@ import pt.ist.fenixframework.consistencyPredicates.DomainDependenceRecord;
 import pt.ist.fenixframework.dml.DomainClass;
 import pt.ist.fenixframework.dml.Role;
 import pt.ist.fenixframework.dml.Slot;
+import pt.ist.vaadinframework.EmbeddedApplication;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.util.IndexedContainer;
@@ -31,7 +33,6 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
-import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
@@ -63,21 +64,8 @@ public class DomainObjectView extends GridLayout {
     @Override
     public void attach() {
         super.attach();
-        HorizontalLayout classHeader = new HorizontalLayout();
-        classHeader.setSpacing(true);
-        classHeader.addComponent(new Label("class"));
-        if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
-            DomainMetaClass metaClass = DomainMetaClass.readDomainMetaClass(domainObject.getClass());
-            if (metaClass != null) {
-                classHeader.addComponent(new DomainClassLink(metaClass));
-            } else {
-                classHeader.addComponent(new Label(domainObject.getClass().getName()));
-            }
-        } else {
-            classHeader.addComponent(new Label(domainObject.getClass().getName()));
-        }
-        addComponent(classHeader, 0, 0, 5, 0);
-
+        addComponent(new Label("class " + domainObject.getClass().getPackage() + ".<b>" + domainObject.getClass().getSimpleName()
+                + "</b>", Label.CONTENT_XHTML), 0, 0, 5, 0);
         addComponent(new Label("<h2>object " + domainObject.getExternalId() + "</h2>", Label.CONTENT_XHTML), 0, 1, 5, 1);
 
         addChart();
@@ -90,18 +78,41 @@ public class DomainObjectView extends GridLayout {
 
     private void addChart() {
         final OrganizationalChart chart = new OrganizationalChart();
+        final Map<String, String> fullClassNameMap = new TreeMap<String, String>();
         chart.setOption("size", "medium");
-        chart.setOption("allowCollapse", false);
-        chart.setHeight(100, UNITS_PERCENTAGE);
-        chart.setWidth(100, UNITS_PERCENTAGE);
-        for (DomainClass dclass = domainClass; dclass != null; dclass = (DomainClass) dclass.getSuperclass()) {
-            DomainClass parent = (DomainClass) dclass.getSuperclass();
-            chart.add(dclass.getName(), parent == null ? "" : parent.getName(), dclass.getFullName());
+
+        int levelCount = 1;
+        DomainClass parent = (DomainClass) domainClass.getSuperclass();
+        String className = "> " + domainClass.getName() + " <";
+        String fullClassName = domainClass.getFullName();
+        chart.add(className, parent == null ? "" : parent.getName(), fullClassName);
+        fullClassNameMap.put(className, fullClassName);
+        for (DomainClass dclass = parent; dclass != null; dclass = (DomainClass) dclass.getSuperclass()) {
+            parent = (DomainClass) dclass.getSuperclass();
+            className = dclass.getName();
+            fullClassName = dclass.getFullName();
+            chart.add(className, parent == null ? "" : parent.getName(), fullClassName);
+            fullClassNameMap.put(className, fullClassName);
+            levelCount++;
         }
-        chart.setSizeFull();
-        chart.setVisible(true);
-        addComponent(chart, 0, 2, 0, 3);
-        setComponentAlignment(chart, Alignment.TOP_LEFT);
+
+        chart.setHeight(70 * levelCount, UNITS_PIXELS);
+        chart.setWidth(100, UNITS_PERCENTAGE);
+        addComponent(chart, 0, 2, 1, 3);
+
+        if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+            chart.addListener(new OrganizationalChart.SelectionListener() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void selectionChanged(List<String> selectedItems) {
+                    if (!selectedItems.isEmpty()) {
+                        EmbeddedApplication.open(getApplication(), DomainBrowser.class, null, null, null,
+                                fullClassNameMap.get(selectedItems.get(0)));
+                    }
+                }
+            });
+        }
     }
 
     private void addValueSlots() {
@@ -112,7 +123,7 @@ public class DomainObjectView extends GridLayout {
 
         VerticalLayout layout = new VerticalLayout();
         layout.addComponent(new Label("<h3>Value Slots</h3>", Label.CONTENT_XHTML));
-        addComponent(layout, 1, 2, 5, 2);
+        addComponent(layout, 2, 2, 5, 2);
         setComponentAlignment(layout, Alignment.TOP_CENTER);
 
         Table table = new Table();
@@ -137,7 +148,7 @@ public class DomainObjectView extends GridLayout {
 
         VerticalLayout layout = new VerticalLayout();
         layout.addComponent(new Label("<h3>Relation Slots</h3>", Label.CONTENT_XHTML));
-        addComponent(layout, 1, 3, 5, 3);
+        addComponent(layout, 2, 3, 5, 3);
         setComponentAlignment(layout, Alignment.TOP_CENTER);
 
         Table table = new Table();
