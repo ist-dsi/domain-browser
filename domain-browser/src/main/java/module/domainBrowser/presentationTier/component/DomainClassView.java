@@ -25,12 +25,14 @@ import com.google.common.collect.Iterators;
 import com.jensjansson.pagedtable.PagedTable;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.ui.Alignment;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.ProgressIndicator;
 import com.vaadin.ui.TabSheet;
+import com.vaadin.ui.TabSheet.SelectedTabChangeEvent;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.VerticalLayout;
@@ -50,7 +52,7 @@ public class DomainClassView extends GridLayout {
 
         @Override
         public int size() {
-            return DomainUtils.getObjectCountIncludingSubclasses(metaClass);
+            return metaClass.getExistingDomainMetaObjectsCount();
         }
 
         @Override
@@ -63,20 +65,8 @@ public class DomainClassView extends GridLayout {
             if (!(obj instanceof DomainMetaObject)) {
                 return false;
             }
-            return contains(metaClass, (DomainMetaObject) obj);
-        }
-
-        private boolean contains(DomainMetaClass metaClass, DomainMetaObject metaObject) {
-            if (metaClass.getExistingDomainMetaObjects().contains(metaObject.getExternalId())) {
-                return true;
-            }
-
-            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
-                if (contains(metaSubclass, metaObject)) {
-                    return true;
-                }
-            }
-            return false;
+            DomainMetaObject metaObject = (DomainMetaObject) obj;
+            return metaClass.getExistingDomainMetaObjects().contains(metaObject.getExternalId());
         }
 
         @Override
@@ -91,27 +81,7 @@ public class DomainClassView extends GridLayout {
 
         @Override
         public Iterator<DomainMetaObject> iterator() {
-            return iterator(metaClass);
-        }
-
-        private Iterator<DomainMetaObject> iterator(DomainMetaClass metaClass) {
-            Iterator<DomainMetaObject> iterator = metaClass.getExistingDomainMetaObjects().iterator();
-            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
-                iterator = Iterators.concat(iterator, iterator(metaSubclass));
-            }
-            return iterator;
-        }
-
-        public Collection<DomainMetaObject> first(int size) {
-            Collection<DomainMetaObject> firstObjs = new HashSet<DomainMetaObject>();
-            for (DomainMetaObject metaObject : this) {
-                if (firstObjs.size() >= size) {
-                    break;
-                }
-                firstObjs.add(metaObject);
-            }
-
-            return firstObjs;
+            return metaClass.getExistingDomainMetaObjects().iterator();
         }
 
         @Override
@@ -152,6 +122,52 @@ public class DomainClassView extends GridLayout {
         @Override
         public void clear() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private class MetaObjectCollectionWrapperIncludingSubclasses extends MetaObjectCollectionWrapper {
+
+        private MetaObjectCollectionWrapperIncludingSubclasses(DomainMetaClass metaClass) {
+            super(metaClass);
+        }
+
+        @Override
+        public int size() {
+            return DomainUtils.getObjectCountIncludingSubclasses(metaClass);
+        }
+
+        @Override
+        public boolean contains(Object obj) {
+            if (!(obj instanceof DomainMetaObject)) {
+                return false;
+            }
+            return contains(metaClass, (DomainMetaObject) obj);
+        }
+
+        private boolean contains(DomainMetaClass metaClass, DomainMetaObject metaObject) {
+            if (metaClass.getExistingDomainMetaObjects().contains(metaObject.getExternalId())) {
+                return true;
+            }
+
+            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
+                if (contains(metaSubclass, metaObject)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public Iterator<DomainMetaObject> iterator() {
+            return iterator(metaClass);
+        }
+
+        private Iterator<DomainMetaObject> iterator(DomainMetaClass metaClass) {
+            Iterator<DomainMetaObject> iterator = metaClass.getExistingDomainMetaObjects().iterator();
+            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
+                iterator = Iterators.concat(iterator, iterator(metaSubclass));
+            }
+            return iterator;
         }
     }
 
@@ -241,26 +257,49 @@ public class DomainClassView extends GridLayout {
         addComponent(panel, 0, 2, 2, 2);
     }
 
+    private static Component notInitializedObjectsLayout = new VerticalLayout();
+    private static Component notInitializedInconsistenciesLayout = new VerticalLayout();
+
     private void addObjects() {
-        Label objectsTitle = new Label("<h3>Objects</h3>", Label.CONTENT_XHTML);
-        addComponent(objectsTitle, 0, 3, 2, 3);
+        addComponent(new Label("<h3>Objects</h3>", Label.CONTENT_XHTML), 0, 3, 2, 3);
+        final TabSheet tabs = new TabSheet();
+        MetaObjectCollectionWrapper allObjects = new MetaObjectCollectionWrapperIncludingSubclasses(metaClass);
+        tabs.addTab(createObjectsLayout(allObjects), allObjects.size() + " total");
+        tabs.addTab(notInitializedObjectsLayout, metaClass.getExistingDomainMetaObjectsCount() + " excluding subclasses");
+        tabs.addTab(notInitializedInconsistenciesLayout, DomainUtils.getInconsistencyCount(metaClass) + " inconsistent");
+        addComponent(tabs, 0, 4, 2, 4);
 
-        addComponent(new Label(DomainUtils.getObjectCountIncludingSubclasses(metaClass) + " total"), 0, 4, 0, 4);
+        tabs.addListener(new TabSheet.SelectedTabChangeListener() {
+            private static final long serialVersionUID = 1L;
 
-        addComponent(new Label(metaClass.getExistingDomainMetaObjectsCount() + " excluding subclasses"), 1, 4, 1, 4);
+            @Override
+            public void selectedTabChange(SelectedTabChangeEvent event) {
+                if (tabs.getSelectedTab().equals(notInitializedObjectsLayout)) {
+                    tabs.removeComponent(notInitializedObjectsLayout);
+                    tabs.addTab(createObjectsLayout(new MetaObjectCollectionWrapper(metaClass)),
+                            metaClass.getExistingDomainMetaObjectsCount() + " excluding subclasses", null, 1);
+                    tabs.setSelectedTab(1);
+                }
+                if (tabs.getSelectedTab().equals(notInitializedInconsistenciesLayout)) {
+                    tabs.removeComponent(notInitializedInconsistenciesLayout);
+                    tabs.addTab(createObjectsLayout(DomainUtils.getInconsistentObjects(metaClass)),
+                            DomainUtils.getInconsistencyCount(metaClass) + " inconsistent", null, 2);
+                    tabs.setSelectedTab(2);
+                }
+            }
+        });
+    }
 
-        addComponent(new Label(DomainUtils.getInconsistencyCount(metaClass) + " inconsistent"), 2, 4, 2, 4);
-
-        final MetaObjectCollectionWrapper existingObjects = new MetaObjectCollectionWrapper(metaClass);
+    private VerticalLayout createObjectsLayout(final Collection<DomainMetaObject> objects) {
         final BeanItemContainer<DomainMetaObject> container = new BeanItemContainer<DomainMetaObject>(DomainMetaObject.class);
         //Clear all properties; use only the table's generated columns
         container.getContainerPropertyIds().clear();
-        container.addAll(existingObjects.first(25));
+        container.addAll(first(objects, 25));
 
         final VerticalLayout objectsLayout = new VerticalLayout();
         final PagedTable objectsTable = new PagedTable();
         objectsTable.setSizeFull();
-        objectsTable.setPageLength(existingObjects.first(25).size());
+        objectsTable.setPageLength(first(objects, 25).size());
         objectsTable.setContainerDataSource(container);
         objectsTable.addGeneratedColumn("Object", new ColumnGenerator() {
             @Override
@@ -280,7 +319,6 @@ public class DomainClassView extends GridLayout {
         progress.setEnabled(true);
         objectsLayout.addComponent(progress);
         objectsLayout.setComponentAlignment(progress, Alignment.MIDDLE_CENTER);
-        addComponent(objectsLayout, 0, 5, 2, 5);
 
         Thread thread = new Thread() {
             @Override
@@ -288,12 +326,12 @@ public class DomainClassView extends GridLayout {
             public void run() {
                 // force the iteration through all the existingObjects to pre-load them in memory
                 // to reduce the contention time inside the syncronized block
-                for (DomainMetaObject metaObject : existingObjects) {
+                for (DomainMetaObject metaObject : objects) {
                     ;
                 }
                 synchronized (getApplication()) {
-                    if (existingObjects.size() > 25) {
-                        container.addAll(existingObjects);
+                    if (objects.size() > 25) {
+                        container.addAll(objects);
                         HorizontalLayout controls = objectsTable.createControls();
                         controls.removeComponent(controls.getComponent(0)); //Remove page length control
                         objectsLayout.addComponent(controls);
@@ -303,18 +341,32 @@ public class DomainClassView extends GridLayout {
             }
         };
         thread.start();
+
+        return objectsLayout;
+    }
+
+    public static Collection<DomainMetaObject> first(Collection<DomainMetaObject> objects, int size) {
+        Collection<DomainMetaObject> firstObjs = new HashSet<DomainMetaObject>();
+        for (DomainMetaObject metaObject : objects) {
+            if (firstObjs.size() >= size) {
+                break;
+            }
+            firstObjs.add(metaObject);
+        }
+
+        return firstObjs;
     }
 
     private void addPredicates() {
-        addComponent(new Label("<br/><h3>Consistency Predicates</h3>", Label.CONTENT_XHTML), 0, 6, 2, 6);
+        addComponent(new Label("<br/><h3>Consistency Predicates</h3>", Label.CONTENT_XHTML), 0, 5, 2, 5);
         TabSheet tabs = new TabSheet();
-        tabs.addTab(createPredicatesTable(metaClass.getAllConsistencyPredicates()), metaClass.getAllConsistencyPredicates()
-                .size() + " total (including inherited)");
-        tabs.addTab(createPredicatesTable(metaClass.getDeclaredConsistencyPredicateSet()), metaClass
-                .getDeclaredConsistencyPredicateSet().size() + " declared");
-        tabs.addTab(createPredicatesTable(getConsistencyPredicatesWithInconsistencies(metaClass)),
-                getConsistencyPredicatesWithInconsistencies(metaClass).size() + " inconsistent");
-        addComponent(tabs, 0, 7, 2, 7);
+        Collection<DomainConsistencyPredicate> allPredicates = metaClass.getAllConsistencyPredicates();
+        Collection<DomainConsistencyPredicate> declaredPredicates = metaClass.getDeclaredConsistencyPredicateSet();
+        Collection<DomainConsistencyPredicate> inconsistentPredicates = getConsistencyPredicatesWithInconsistencies(metaClass);
+        tabs.addTab(createPredicatesTable(allPredicates), allPredicates.size() + " total (including inherited)");
+        tabs.addTab(createPredicatesTable(declaredPredicates), declaredPredicates.size() + " declared");
+        tabs.addTab(createPredicatesTable(inconsistentPredicates), inconsistentPredicates.size() + " inconsistent");
+        addComponent(tabs, 0, 6, 2, 6);
     }
 
     private Table createPredicatesTable(Collection<DomainConsistencyPredicate> predicates) {

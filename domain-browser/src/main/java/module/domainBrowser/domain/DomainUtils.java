@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -11,6 +12,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang.StringUtils;
 
 import pt.ist.fenixframework.DomainMetaClass;
+import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
@@ -211,6 +213,26 @@ public class DomainUtils {
             }
         }
         return inconsistencies;
+    }
+
+    public static Collection<DomainMetaObject> getInconsistentObjects(DomainMetaClass metaClass) {
+        Collection<DomainMetaObject> inconsistentObjects = new HashSet<DomainMetaObject>();
+        for (DomainConsistencyPredicate predicate : metaClass.getAllConsistencyPredicates()) {
+            if (isInherited(predicate, metaClass)) {
+                // For inherited predicates, count only the inconsistent objects that belong to the current metaClass hierarchy
+                for (DomainDependenceRecord inconsistentRecord : predicate.getInconsistentDependenceRecordSet()) {
+                    if (metaClass.getDomainClass().isAssignableFrom(inconsistentRecord.getDependent().getClass())) {
+                        inconsistentObjects.add(inconsistentRecord.getDependentDomainMetaObject());
+                    }
+                }
+            } else {
+                // Declared predicates can only affect objects of the current metaClass hierarchy
+                for (DomainDependenceRecord dependenceRecord : predicate.getInconsistentDependenceRecordSet()) {
+                    inconsistentObjects.add(dependenceRecord.getDependentDomainMetaObject());
+                }
+            }
+        }
+        return inconsistentObjects;
     }
 
     public static boolean isInherited(DomainConsistencyPredicate predicate, DomainMetaClass metaClass) {
