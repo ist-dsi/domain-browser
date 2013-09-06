@@ -2,18 +2,28 @@ package module.domainBrowser.domain;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 
+import pt.ist.fenixframework.DomainMetaClass;
+import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
+import pt.ist.fenixframework.consistencyPredicates.DomainDependenceRecord;
+import pt.ist.fenixframework.consistencyPredicates.PublicConsistencyPredicate;
 import pt.ist.fenixframework.dml.DomainClass;
 import pt.ist.fenixframework.dml.Role;
 import pt.ist.fenixframework.dml.Slot;
+
+import com.vaadin.terminal.ExternalResource;
+import com.vaadin.ui.Link;
 
 public class DomainUtils {
 
@@ -179,4 +189,138 @@ public class DomainUtils {
         return result;
     }
 
+    public static int getObjectCountIncludingSubclasses(DomainMetaClass metaClass) {
+        int totalCount = metaClass.getExistingDomainMetaObjectsCount();
+        for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
+            totalCount += getObjectCountIncludingSubclasses(metaSubclass);
+        }
+        return totalCount;
+    }
+
+    public static int getInconsistencyCount(DomainMetaClass metaClass) {
+        int inconsistencies = 0;
+        for (DomainConsistencyPredicate predicate : metaClass.getAllConsistencyPredicates()) {
+            if (isInherited(predicate, metaClass)) {
+                // For inherited predicates, count only the inconsistent objects that belong to the current metaClass hierarchy
+                for (DomainDependenceRecord inconsistentRecord : predicate.getInconsistentDependenceRecordSet()) {
+                    if (metaClass.getDomainClass().isAssignableFrom(inconsistentRecord.getDependent().getClass())) {
+                        inconsistencies++;
+                    }
+                }
+            } else {
+                // Declared predicates can only affect objects of the current metaClass hierarchy
+                inconsistencies += predicate.getInconsistentDependenceRecordSet().size();
+            }
+        }
+        return inconsistencies;
+    }
+
+    public static Collection<DomainMetaObject> getInconsistentObjects(DomainMetaClass metaClass) {
+        Collection<DomainMetaObject> inconsistentObjects = new HashSet<DomainMetaObject>();
+        for (DomainConsistencyPredicate predicate : metaClass.getAllConsistencyPredicates()) {
+            if (isInherited(predicate, metaClass)) {
+                // For inherited predicates, count only the inconsistent objects that belong to the current metaClass hierarchy
+                for (DomainDependenceRecord inconsistentRecord : predicate.getInconsistentDependenceRecordSet()) {
+                    if (metaClass.getDomainClass().isAssignableFrom(inconsistentRecord.getDependent().getClass())) {
+                        inconsistentObjects.add(inconsistentRecord.getDependentDomainMetaObject());
+                    }
+                }
+            } else {
+                // Declared predicates can only affect objects of the current metaClass hierarchy
+                for (DomainDependenceRecord dependenceRecord : predicate.getInconsistentDependenceRecordSet()) {
+                    inconsistentObjects.add(dependenceRecord.getDependentDomainMetaObject());
+                }
+            }
+        }
+        return inconsistentObjects;
+    }
+
+    public static boolean isInherited(DomainConsistencyPredicate predicate, DomainMetaClass metaClass) {
+        if (metaClass.getDomainMetaSuperclass() == null) {
+            return false;
+        }
+        if (metaClass.getDomainMetaSuperclass().getAllConsistencyPredicates().contains(predicate)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static int getAffectedObjectsCount(DomainConsistencyPredicate predicate) {
+        int objectCount = 0;
+        for (DomainMetaClass metaClass : getAffectedMetaClasses(predicate, predicate.getDomainMetaClass())) {
+            objectCount += metaClass.getExistingDomainMetaObjectsCount();
+        }
+        return objectCount;
+    }
+
+    private static Collection<DomainMetaClass> getAffectedMetaClasses(DomainConsistencyPredicate predicate,
+            DomainMetaClass metaClass) {
+        Collection<DomainMetaClass> affectedClasses =
+                new TreeSet<DomainMetaClass>(DomainMetaClass.COMPARATOR_BY_META_CLASS_HIERARCHY_TOP_DOWN);
+
+        if (predicate instanceof PublicConsistencyPredicate) {
+            if (metaClass == predicate.getDomainMetaClass()) {
+                // The metaClass is this very predicate's declaring class, so it is not a subclass yet.
+                affectedClasses.add(metaClass);
+            } else {
+                try {
+                    metaClass.getDomainClass().getDeclaredMethod(predicate.getPredicate().getName());
+                    // If no exception was thrown, the method is being overridden from this class downwards,
+                    // so stop and don't search in subclasses.
+                    return affectedClasses;
+                } catch (NoSuchMethodException e) {
+                    // The method is not being overridden here, so include this class and search for subclasses.
+                    affectedClasses.add(metaClass);
+                }
+            }
+        } else {
+            affectedClasses.add(metaClass);
+        }
+
+        for (DomainMetaClass subclass : metaClass.getDomainMetaSubclassSet()) {
+            affectedClasses.addAll(getAffectedMetaClasses(predicate, subclass));
+        }
+
+        return affectedClasses;
+    }
+
+    public static class DomainObjectLink extends Link {
+        private static final long serialVersionUID = 1L;
+
+        private DomainObject domainObject;
+
+        public DomainObjectLink(DomainObject domainObject) {
+            this.domainObject = domainObject;
+        }
+
+        @Override
+        public void attach() {
+            super.attach();
+            if (domainObject != null) {
+                String externalId = domainObject.getExternalId();
+                setCaption(externalId);
+                setResource(new ExternalResource("vaadinContext.do?method=forwardToVaadin#DomainBrowser?externalId=" + externalId));
+            }
+        }
+    }
+
+    public static class DomainClassLink extends Link {
+        private static final long serialVersionUID = 1L;
+
+        private DomainMetaClass metaClass;
+
+        public DomainClassLink(DomainMetaClass metaClass) {
+            this.metaClass = metaClass;
+        }
+
+        @Override
+        public void attach() {
+            super.attach();
+            if (metaClass != null) {
+                String className = metaClass.getDomainClass().getName();
+                setCaption(className);
+                setResource(new ExternalResource("vaadinContext.do?method=forwardToVaadin#DomainBrowser?className=" + className));
+            }
+        }
+    }
 }

@@ -3,20 +3,27 @@ package module.domainBrowser.presentationTier.component;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import module.domainBrowser.domain.DomainUtils;
+import module.domainBrowser.domain.DomainUtils.DomainClassLink;
+
 import org.apache.commons.lang.StringUtils;
 
 import pt.ist.fenixframework.DomainFenixFrameworkRoot;
 import pt.ist.fenixframework.DomainMetaClass;
-import pt.ist.fenixframework.DomainObject;
-import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
 
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
 
 @SuppressWarnings("serial")
 public class DomainClassListView extends VerticalLayout {
+
+    private static final String CLASS_NAME_COLUMN = "className";
+    private static final String OBJECTS_COLUMN = "objects";
+    private static final String PREDICATES_COLUMN = "predicates";
+    private static final String INCONSISTENCIES_COLUMN = "inconsistencies";
 
     public static class DomainMetaClassBean {
 
@@ -30,37 +37,20 @@ public class DomainClassListView extends VerticalLayout {
             return metaClass;
         }
 
-        public Label getClassName() {
-            Class<? extends DomainObject> domainClass = getMetaClass().getDomainClass();
-            Label label =
-                    new Label(domainClass.getPackage().getName() + ".<b>" + domainClass.getSimpleName() + "</b>",
-                            Label.CONTENT_XHTML);
-            label.setSizeUndefined();
-            return label;
+        public Link getClassName() {
+            return new DomainClassLink(getMetaClass());
         }
 
         public Integer getObjects() {
-            return getObjectCountIncludingSubclasses(getMetaClass());
+            return DomainUtils.getObjectCountIncludingSubclasses(getMetaClass());
         }
 
         public Integer getPredicates() {
-            return getMetaClass().getDeclaredConsistencyPredicateSet().size();
+            return getMetaClass().getAllConsistencyPredicates().size();
         }
 
         public Integer getInconsistencies() {
-            int inconsistencies = 0;
-            for (DomainConsistencyPredicate predicate : getMetaClass().getDeclaredConsistencyPredicateSet()) {
-                inconsistencies += predicate.getInconsistentDependenceRecordSet().size();
-            }
-            return inconsistencies;
-        }
-
-        private static int getObjectCountIncludingSubclasses(DomainMetaClass metaClass) {
-            int totalCount = metaClass.getExistingDomainMetaObjectsCount();
-            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
-                totalCount += getObjectCountIncludingSubclasses(metaSubclass);
-            }
-            return totalCount;
+            return DomainUtils.getInconsistencyCount(getMetaClass());
         }
 
         private static Collection<DomainMetaClassBean> readAllDomainMetaClasses() {
@@ -101,6 +91,7 @@ public class DomainClassListView extends VerticalLayout {
     public DomainClassListView(String classSearch) {
         super();
         setSpacing(true);
+        classSearch = classSearch.trim();
 
         Label header;
         Collection<DomainMetaClassBean> metaClassBeans;
@@ -108,7 +99,7 @@ public class DomainClassListView extends VerticalLayout {
             header = new Label("All Domain Classes");
             metaClassBeans = DomainMetaClassBean.readAllDomainMetaClasses();
         } else {
-            header = new Label("Domain Classes matching search results for: " + classSearch);
+            header = new Label("Domain Classes matching search results for: <b>" + classSearch + "</b>", Label.CONTENT_XHTML);
             metaClassBeans = DomainMetaClassBean.searchDomainMetaClasses(classSearch);
         }
 
@@ -116,34 +107,34 @@ public class DomainClassListView extends VerticalLayout {
 
         //The BeanItemContainer discovers the properties by using reflection to search for public getters
         //Methods discovered by reflection are in an arbitrary order
-        //This code orders the columns manually (by the order they are added)
         final BeanItemContainer<DomainMetaClassBean> container =
-                new BeanItemContainer<DomainMetaClassBean>(DomainMetaClassBean.class, metaClassBeans) {
-                    {
-                        removeContainerProperty("className");
-                        removeContainerProperty("objects");
-                        removeContainerProperty("predicates");
-                        removeContainerProperty("inconsistencies");
-                        addNestedContainerProperty("className");
-                        addNestedContainerProperty("objects");
-                        addNestedContainerProperty("predicates");
-                        addNestedContainerProperty("inconsistencies");
-                    }
-                };
-        Table classListTable = new Table() {
-            {
-                setSizeFull();
-                setHeight("500px");
-                setContainerDataSource(container);
-                setColumnAlignment("className", Table.ALIGN_RIGHT);
-            }
-        };
+                new BeanItemContainer<DomainMetaClassBean>(DomainMetaClassBean.class, metaClassBeans);
+        container.getContainerPropertyIds().clear();
+        //This code orders the columns manually (by the order they are added)
+        container.addNestedContainerProperty(CLASS_NAME_COLUMN);
+        container.addNestedContainerProperty(OBJECTS_COLUMN);
+        container.addNestedContainerProperty(PREDICATES_COLUMN);
+        container.addNestedContainerProperty(INCONSISTENCIES_COLUMN);
+
+        Table classListTable = new Table();
+        classListTable.setSizeFull();
+        classListTable.setHeight("500px");
+        classListTable.setContainerDataSource(container);
+        classListTable.setColumnAlignment(CLASS_NAME_COLUMN, Table.ALIGN_RIGHT);
         addComponent(classListTable);
 
         addComponent(new Label("Label:"));
-        addComponent(new Label("Objects - Number of existing objects of the class (and subclasses)"));
-        addComponent(new Label("Predicates - Number of predicates declared by the class"));
-        addComponent(new Label("Inconsistencies - Objects that are inconsistent according to the declared predicates, "
-                + "among the existing objects of the class (and subclasses)"));
+        addComponent(new Label("<b><span style='font-size:11px'>" + CLASS_NAME_COLUMN.toUpperCase()
+                + "</span></b> - Full package name of the class", Label.CONTENT_XHTML));
+
+        addComponent(new Label("<b><span style='font-size:11px'>" + OBJECTS_COLUMN.toUpperCase()
+                + "</span></b> - Number of existing objects of the class (and subclasses)", Label.CONTENT_XHTML));
+
+        addComponent(new Label("<b><span style='font-size:11px'>" + PREDICATES_COLUMN.toUpperCase()
+                + "</span></b> - Number of predicates declared by the class", Label.CONTENT_XHTML));
+
+        addComponent(new Label("<b><span style='font-size:11px'>" + INCONSISTENCIES_COLUMN.toUpperCase()
+                + "</span></b> - Objects that are inconsistent according to the declared predicates, "
+                + "among the existing objects of the class (and subclasses)", Label.CONTENT_XHTML));
     }
 }
