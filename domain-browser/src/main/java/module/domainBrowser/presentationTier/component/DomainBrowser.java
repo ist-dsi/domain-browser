@@ -41,6 +41,7 @@ import pt.ist.vaadinframework.EmbeddedApplication;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
 
+import com.vaadin.event.ShortcutAction.KeyCode;
 import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
@@ -204,6 +205,7 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
             setColumnExpandRatio(1, 0);
 
             SearchButton browseObjectButton = new SearchButton();
+            browseObjectButton.setClickShortcut(KeyCode.ENTER);
             browseObjectButton.setSizeUndefined();
             addComponent(browseObjectButton, 2, 0);
             setComponentAlignment(browseObjectButton, Alignment.MIDDLE_LEFT);
