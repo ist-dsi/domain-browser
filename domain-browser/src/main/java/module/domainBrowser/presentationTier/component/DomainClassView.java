@@ -240,6 +240,8 @@ public class DomainClassView extends GridLayout {
         } else {
             chart.setWidth(230 * metaClass.getDomainMetaSubclassSet().size(), UNITS_PIXELS);
         }
+        panel.setScrollable(true);
+        panel.setScrollLeft(Math.round((chart.getWidth() / 3)));
 
         chart.addListener(new OrganizationalChart.SelectionListener() {
             private static final long serialVersionUID = 1L;
