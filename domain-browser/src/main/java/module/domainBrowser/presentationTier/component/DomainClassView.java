@@ -385,7 +385,7 @@ public class DomainClassView extends GridLayout {
             public Object generateCell(Table source, Object itemId, Object columnId) {
                 DomainConsistencyPredicate predicate = (DomainConsistencyPredicate) itemId;
                 Label label =
-                        new Label(predicate.getDomainMetaClass().getDomainClass().getName() + ".<b>"
+                        new Label(predicate.getPredicate().getDeclaringClass().getName() + ".<b>"
                                 + predicate.getPredicate().getName() + "()</b>", Label.CONTENT_XHTML);
                 label.setSizeUndefined();
                 return label;
