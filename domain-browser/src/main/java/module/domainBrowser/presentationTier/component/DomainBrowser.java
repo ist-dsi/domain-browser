@@ -164,6 +164,7 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
                 if (!StringUtils.isEmpty(fieldValue) && StringUtils.isNumeric(fieldValue)) {
                     EmbeddedApplication.open(getApplication(), DomainBrowser.class, fieldValue);
                 } else {
+                    fieldValue = fieldValue.replaceAll("[^a-zA-Z0-9_\\*]", "");
                     EmbeddedApplication.open(getApplication(), DomainBrowser.class, null, null, fieldValue);
                 }
             }
