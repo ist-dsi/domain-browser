@@ -15,6 +15,7 @@ import org.vaadin.vaadinvisualizations.OrganizationalChart;
 import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
+import pt.ist.fenixframework.NoDomainMetaObjects;
 import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicateSystem;
 import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicatesConfig;
 import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
@@ -107,8 +108,15 @@ public class DomainObjectView extends GridLayout {
                 @Override
                 public void selectionChanged(List<String> selectedItems) {
                     if (!selectedItems.isEmpty()) {
-                        EmbeddedApplication.open(getApplication(), DomainBrowser.class, null, null, null,
-                                fullClassNameMap.get(selectedItems.get(0)));
+                        String fullClassName = fullClassNameMap.get(selectedItems.get(0));
+                        try {
+                            if (!Class.forName(fullClassName).isAnnotationPresent(NoDomainMetaObjects.class)) {
+                                EmbeddedApplication.open(getApplication(), DomainBrowser.class, null, null, null, fullClassName);
+                            }
+                        } catch (ClassNotFoundException ex) {
+                            ex.printStackTrace();
+                            return;
+                        }
                     }
                 }
             });
