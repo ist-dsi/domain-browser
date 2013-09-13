@@ -84,28 +84,29 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
 
     @Override
     public void setArguments(final Map<String, String> args) {
-        if (args != null) {
-            String externalId = args.get("externalId");
-            if (externalId != null) {
-                viewDomainObject(externalId);
-                searchPanel.setInputValue(externalId);
-                return;
-            }
-            String viewAllClasses = args.get("viewAllClasses");
-            if (viewAllClasses != null) {
-                searchClasses("");
-                return;
-            }
-            String classSearch = args.get("classSearch");
-            if (classSearch != null) {
-                searchClasses(classSearch);
-                searchPanel.setInputValue(classSearch);
-                return;
-            }
-            String className = args.get("className");
-            if (className != null) {
-                viewDomainClass(className);
-            }
+        if (args == null) {
+            return;
+        }
+        String externalId = args.get("externalId");
+        if (externalId != null) {
+            viewDomainObject(externalId);
+            searchPanel.setInputValue(externalId);
+            return;
+        }
+        String viewAllClasses = args.get("viewAllClasses");
+        if (viewAllClasses != null) {
+            searchClasses("");
+            return;
+        }
+        String classSearch = args.get("classSearch");
+        if (classSearch != null) {
+            searchClasses(classSearch);
+            searchPanel.setInputValue(classSearch);
+            return;
+        }
+        String className = args.get("className");
+        if (className != null) {
+            viewDomainClass(className);
         }
     }
 
@@ -113,6 +114,8 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
         DomainObject domainObject = DomainUtils.readDomainObject(id);
         if (domainObject != null) {
             changeDomainView(new DomainObjectView(domainObject));
+        } else {
+            changeDomainView(new Label("No such object found: " + id));
         }
     }
 
@@ -161,7 +164,10 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
             @Override
             public void buttonClick(final ClickEvent event) {
                 String fieldValue = ((String) textField.getValue()).trim();
-                if (!StringUtils.isEmpty(fieldValue) && StringUtils.isNumeric(fieldValue)) {
+                if (StringUtils.isEmpty(fieldValue)) {
+                    return;
+                }
+                if (StringUtils.isNumeric(fieldValue)) {
                     EmbeddedApplication.open(getApplication(), DomainBrowser.class, fieldValue);
                 } else {
                     fieldValue = fieldValue.replaceAll("[^a-zA-Z0-9_\\*]", "");

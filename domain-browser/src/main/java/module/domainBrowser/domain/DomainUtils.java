@@ -18,6 +18,7 @@ import pt.ist.fenixframework.FenixFramework;
 import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
 import pt.ist.fenixframework.consistencyPredicates.DomainDependenceRecord;
 import pt.ist.fenixframework.consistencyPredicates.PublicConsistencyPredicate;
+import pt.ist.fenixframework.core.AbstractDomainObject;
 import pt.ist.fenixframework.dml.DomainClass;
 import pt.ist.fenixframework.dml.Role;
 import pt.ist.fenixframework.dml.Slot;
@@ -58,8 +59,17 @@ public class DomainUtils {
     }
 
     public static DomainObject readDomainObject(final String externalId) {
-        return externalId != null && !externalId.isEmpty() && StringUtils.isNumeric(externalId) ? FenixFramework
-                .getDomainObject(externalId) : null;
+        if (externalId == null || externalId.isEmpty() || !StringUtils.isNumeric(externalId)) {
+            return null;
+        }
+        AbstractDomainObject object = FenixFramework.getDomainObject(externalId);
+        try {
+            DomainMetaObject.getDomainMetaObjectFor(object);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return object;
     }
 
     public static Object getSlot(final DomainObject domainObject, final Slot slot) {
