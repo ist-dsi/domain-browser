@@ -5,6 +5,16 @@ A small administrative application that allows you to browse the existing domain
 ---
 ## Change Logs:
 
+### v1.6.0
+
+**New Features:**  
+
+	Added a Consistency Predicate View to show information about a single consistency predicate.
+	This view lists all of a predicate's affected objects, and those that are inconsistent.
+	It also shows the overridden predicate (if any), and all the overriding predicates (if any).
+
+
+
 ### v1.5.0
 
 **New Features:**  
