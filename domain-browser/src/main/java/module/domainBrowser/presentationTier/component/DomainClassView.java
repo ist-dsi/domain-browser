@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import module.domainBrowser.domain.DomainUtils;
+import module.domainBrowser.domain.DomainUtils.ConsistencyPredicateLink;
 import module.domainBrowser.domain.DomainUtils.DomainClassLink;
 import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
 
@@ -350,11 +351,9 @@ public class DomainClassView extends GridLayout {
             @Override
             public Object generateCell(Table source, Object itemId, Object columnId) {
                 DomainConsistencyPredicate predicate = (DomainConsistencyPredicate) itemId;
-                Label label =
-                        new Label(predicate.getPredicate().getDeclaringClass().getName() + ".<b>"
-                                + predicate.getPredicate().getName() + "()</b>", Label.CONTENT_XHTML);
-                label.setSizeUndefined();
-                return label;
+                ConsistencyPredicateLink predicateLink = new ConsistencyPredicateLink(predicate);
+                predicateLink.setSizeUndefined();
+                return predicateLink;
             }
         });
         predicatesTable.addGeneratedColumn("Affected Objects", new ColumnGenerator() {

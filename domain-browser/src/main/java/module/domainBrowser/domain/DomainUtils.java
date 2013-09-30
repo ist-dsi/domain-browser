@@ -339,4 +339,26 @@ public class DomainUtils {
             }
         }
     }
+
+    public static class ConsistencyPredicateLink extends Link {
+        private static final long serialVersionUID = 1L;
+
+        private DomainConsistencyPredicate predicate;
+
+        public ConsistencyPredicateLink(DomainConsistencyPredicate predicate) {
+            this.predicate = predicate;
+        }
+
+        @Override
+        public void attach() {
+            super.attach();
+            if (predicate != null) {
+                String predicateName =
+                        predicate.getPredicate().getDeclaringClass().getName() + "." + predicate.getPredicate().getName() + "()";
+                setCaption(predicateName);
+                setResource(new ExternalResource("vaadinContext.do?method=forwardToVaadin#DomainBrowser?predicateName="
+                        + predicateName));
+            }
+        }
+    }
 }
