@@ -42,17 +42,21 @@ public class DomainClassView extends GridLayout {
 
     private final DomainMetaClass metaClass;
 
-    private class MetaObjectCollectionWrapper implements Collection<DomainMetaObject> {
+    protected static class MetaObjectCollectionWrapper implements Collection<DomainMetaObject> {
 
-        private final DomainMetaClass metaClass;
+        private final DomainMetaClass[] metaClasses;
 
-        private MetaObjectCollectionWrapper(DomainMetaClass metaClass) {
-            this.metaClass = metaClass;
+        protected MetaObjectCollectionWrapper(DomainMetaClass... metaClasses) {
+            this.metaClasses = metaClasses;
         }
 
         @Override
         public int size() {
-            return metaClass.getExistingDomainMetaObjectsCount();
+            int objectCount = 0;
+            for (DomainMetaClass metaClass : metaClasses) {
+                objectCount += metaClass.getExistingDomainMetaObjectsCount();
+            }
+            return objectCount;
         }
 
         @Override
@@ -65,8 +69,12 @@ public class DomainClassView extends GridLayout {
             if (!(obj instanceof DomainMetaObject)) {
                 return false;
             }
-            DomainMetaObject metaObject = (DomainMetaObject) obj;
-            return metaClass.getExistingDomainMetaObjects().contains(metaObject.getExternalId());
+            for (DomainMetaClass metaClass : metaClasses) {
+                if (metaClass.getExistingDomainMetaObjects().contains(((DomainMetaObject) obj).getExternalId())) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
@@ -81,7 +89,11 @@ public class DomainClassView extends GridLayout {
 
         @Override
         public Iterator<DomainMetaObject> iterator() {
-            return metaClass.getExistingDomainMetaObjects().iterator();
+            Iterator<DomainMetaObject> iterator = Iterators.emptyIterator();
+            for (DomainMetaClass metaClass : metaClasses) {
+                iterator = Iterators.concat(iterator, metaClass.getExistingDomainMetaObjects().iterator());
+            }
+            return iterator;
         }
 
         @Override
@@ -122,52 +134,6 @@ public class DomainClassView extends GridLayout {
         @Override
         public void clear() {
             throw new UnsupportedOperationException();
-        }
-    }
-
-    private class MetaObjectCollectionWrapperIncludingSubclasses extends MetaObjectCollectionWrapper {
-
-        private MetaObjectCollectionWrapperIncludingSubclasses(DomainMetaClass metaClass) {
-            super(metaClass);
-        }
-
-        @Override
-        public int size() {
-            return DomainUtils.getObjectCountIncludingSubclasses(metaClass);
-        }
-
-        @Override
-        public boolean contains(Object obj) {
-            if (!(obj instanceof DomainMetaObject)) {
-                return false;
-            }
-            return contains(metaClass, (DomainMetaObject) obj);
-        }
-
-        private boolean contains(DomainMetaClass metaClass, DomainMetaObject metaObject) {
-            if (metaClass.getExistingDomainMetaObjects().contains(metaObject.getExternalId())) {
-                return true;
-            }
-
-            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
-                if (contains(metaSubclass, metaObject)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public Iterator<DomainMetaObject> iterator() {
-            return iterator(metaClass);
-        }
-
-        private Iterator<DomainMetaObject> iterator(DomainMetaClass metaClass) {
-            Iterator<DomainMetaObject> iterator = metaClass.getExistingDomainMetaObjects().iterator();
-            for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
-                iterator = Iterators.concat(iterator, iterator(metaSubclass));
-            }
-            return iterator;
         }
     }
 
@@ -265,7 +231,7 @@ public class DomainClassView extends GridLayout {
     private void addObjects() {
         addComponent(new Label("<h3>Objects</h3>", Label.CONTENT_XHTML), 0, 3, 2, 3);
         final TabSheet tabs = new TabSheet();
-        MetaObjectCollectionWrapper allObjects = new MetaObjectCollectionWrapperIncludingSubclasses(metaClass);
+        MetaObjectCollectionWrapper allObjects = new MetaObjectCollectionWrapper(DomainUtils.getAllMetaSubClasses(metaClass));
         tabs.addTab(createObjectsLayout(allObjects), allObjects.size() + " total");
         tabs.addTab(notInitializedObjectsLayout, metaClass.getExistingDomainMetaObjectsCount() + " excluding subclasses");
         tabs.addTab(notInitializedInconsistenciesLayout, DomainUtils.getInconsistencyCount(metaClass) + " inconsistent");
