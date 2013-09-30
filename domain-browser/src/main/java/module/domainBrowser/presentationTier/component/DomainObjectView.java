@@ -65,8 +65,8 @@ public class DomainObjectView extends GridLayout {
     @Override
     public void attach() {
         super.attach();
-        addComponent(new Label("class " + domainObject.getClass().getPackage() + ".<b>" + domainObject.getClass().getSimpleName()
-                + "</b>", Label.CONTENT_XHTML), 0, 0, 5, 0);
+        addComponent(new Label("class " + domainObject.getClass().getPackage().getName() + ".<b>"
+                + domainObject.getClass().getSimpleName() + "</b>", Label.CONTENT_XHTML), 0, 0, 5, 0);
         addComponent(new Label("<h2>object " + domainObject.getExternalId() + "</h2>", Label.CONTENT_XHTML), 0, 1, 5, 1);
 
         addChart();
