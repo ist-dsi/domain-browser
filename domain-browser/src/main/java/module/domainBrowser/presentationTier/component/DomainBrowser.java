@@ -24,6 +24,7 @@
  */
 package module.domainBrowser.presentationTier.component;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Random;
 
@@ -37,6 +38,7 @@ import pt.ist.bennu.core.domain.User;
 import pt.ist.fenixframework.DomainMetaClass;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.consistencyPredicates.ConsistencyPredicatesConfig;
+import pt.ist.fenixframework.consistencyPredicates.DomainConsistencyPredicate;
 import pt.ist.vaadinframework.EmbeddedApplication;
 import pt.ist.vaadinframework.annotation.EmbeddedComponent;
 import pt.ist.vaadinframework.ui.EmbeddedComponentContainer;
@@ -108,6 +110,10 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
         if (className != null) {
             viewDomainClass(className);
         }
+        String predicateName = args.get("predicateName");
+        if (predicateName != null) {
+            viewConsistencyPredicate(predicateName);
+        }
     }
 
     private void viewDomainObject(String id) {
@@ -143,6 +149,40 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
         } catch (ClassNotFoundException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private void viewConsistencyPredicate(String predicateFullName) {
+        if (!ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+            changeDomainView(new Label(NO_DOMAIN_META_OBJECTS_WARNING));
+            return;
+        }
+        DomainConsistencyPredicate predicate = getDomainPredicate(predicateFullName);
+        if (predicate != null) {
+            changeDomainView(new ConsistencyPredicateView(predicate));
+        }
+    }
+
+    private static DomainConsistencyPredicate getDomainPredicate(String predicateFullName) {
+        try {
+            String className = extractClassName(predicateFullName);
+            String predicateName = extractMethodSimpleName(predicateFullName);
+            Method predicateMethod = Class.forName(className).getDeclaredMethod(predicateName);
+            return DomainConsistencyPredicate.readDomainConsistencyPredicate(predicateMethod);
+        } catch (ClassNotFoundException | NoSuchMethodException ex) {
+            return null;
+        }
+    }
+
+    private static String extractClassName(String methodFullName) {
+        String methodSimpleName = extractMethodSimpleName(methodFullName);
+        return methodFullName.substring(0, methodFullName.length() - methodSimpleName.length() - 3);
+    }
+
+    private static String extractMethodSimpleName(String methodFullName) {
+        String[] methodNameParts = methodFullName.split("\\.");
+        String methodSimpleName = methodNameParts[methodNameParts.length - 1];
+        //Removes the parenthesis
+        return methodSimpleName.substring(0, methodSimpleName.length() - 2);
     }
 
     private void changeDomainView(Component newDomainView) {

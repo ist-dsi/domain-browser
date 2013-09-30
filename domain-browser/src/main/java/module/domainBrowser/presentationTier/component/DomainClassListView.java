@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import module.domainBrowser.domain.DomainUtils;
 import module.domainBrowser.domain.DomainUtils.DomainClassLink;
+import module.domainBrowser.presentationTier.component.DomainClassView.MetaObjectCollectionWrapper;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -42,7 +43,9 @@ public class DomainClassListView extends VerticalLayout {
         }
 
         public Integer getObjects() {
-            return DomainUtils.getObjectCountIncludingSubclasses(getMetaClass());
+            MetaObjectCollectionWrapper allObjects =
+                    new MetaObjectCollectionWrapper(DomainUtils.getAllMetaSubClasses(getMetaClass()));
+            return allObjects.size();
         }
 
         public Integer getPredicates() {

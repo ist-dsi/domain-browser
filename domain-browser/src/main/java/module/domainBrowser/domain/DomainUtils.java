@@ -199,12 +199,18 @@ public class DomainUtils {
         return result;
     }
 
-    public static int getObjectCountIncludingSubclasses(DomainMetaClass metaClass) {
-        int totalCount = metaClass.getExistingDomainMetaObjectsCount();
+    public static DomainMetaClass[] getAllMetaSubClasses(DomainMetaClass metaClass) {
+        Collection<DomainMetaClass> allMetaSubClasses = getAllMetaSubClassesCollection(metaClass);
+        return allMetaSubClasses.toArray(new DomainMetaClass[allMetaSubClasses.size()]);
+    }
+
+    private static Collection<DomainMetaClass> getAllMetaSubClassesCollection(DomainMetaClass metaClass) {
+        Collection<DomainMetaClass> allMetaClasses = new HashSet<DomainMetaClass>();
+        allMetaClasses.add(metaClass);
         for (DomainMetaClass metaSubclass : metaClass.getDomainMetaSubclassSet()) {
-            totalCount += getObjectCountIncludingSubclasses(metaSubclass);
+            allMetaClasses.addAll(getAllMetaSubClassesCollection(metaSubclass));
         }
-        return totalCount;
+        return allMetaClasses;
     }
 
     public static int getInconsistencyCount(DomainMetaClass metaClass) {
@@ -330,6 +336,28 @@ public class DomainUtils {
                 String className = metaClass.getDomainClass().getName();
                 setCaption(className);
                 setResource(new ExternalResource("vaadinContext.do?method=forwardToVaadin#DomainBrowser?className=" + className));
+            }
+        }
+    }
+
+    public static class ConsistencyPredicateLink extends Link {
+        private static final long serialVersionUID = 1L;
+
+        private DomainConsistencyPredicate predicate;
+
+        public ConsistencyPredicateLink(DomainConsistencyPredicate predicate) {
+            this.predicate = predicate;
+        }
+
+        @Override
+        public void attach() {
+            super.attach();
+            if (predicate != null) {
+                String predicateName =
+                        predicate.getPredicate().getDeclaringClass().getName() + "." + predicate.getPredicate().getName() + "()";
+                setCaption(predicateName);
+                setResource(new ExternalResource("vaadinContext.do?method=forwardToVaadin#DomainBrowser?predicateName="
+                        + predicateName));
             }
         }
     }
