@@ -8,10 +8,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import module.domainBrowser.domain.DomainUtils;
+import module.domainBrowser.domain.DomainUtils.DomainClassLink;
 import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
 
 import org.vaadin.vaadinvisualizations.OrganizationalChart;
 
+import pt.ist.fenixframework.DomainMetaClass;
 import pt.ist.fenixframework.DomainMetaObject;
 import pt.ist.fenixframework.DomainObject;
 import pt.ist.fenixframework.FenixFramework;
@@ -34,6 +36,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Embedded;
 import com.vaadin.ui.GridLayout;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Link;
 import com.vaadin.ui.Table;
@@ -65,8 +68,19 @@ public class DomainObjectView extends GridLayout {
     @Override
     public void attach() {
         super.attach();
-        addComponent(new Label("class " + domainObject.getClass().getPackage().getName() + ".<b>"
-                + domainObject.getClass().getSimpleName() + "</b>", Label.CONTENT_XHTML), 0, 0, 5, 0);
+
+        DomainMetaClass metaClass = DomainMetaClass.readDomainMetaClass(domainObject.getClass());
+        if (metaClass != null) {
+            HorizontalLayout classLayout = new HorizontalLayout();
+            classLayout.setSpacing(true);
+            classLayout.addComponent(new Label("class"));
+            classLayout.addComponent(new DomainClassLink(metaClass));
+            addComponent(classLayout, 0, 0, 5, 0);
+        } else {
+            addComponent(new Label("class " + domainObject.getClass().getPackage().getName() + ".<b>"
+                    + domainObject.getClass().getSimpleName() + "</b>", Label.CONTENT_XHTML), 0, 0, 5, 0);
+        }
+
         addComponent(new Label("<h2>object " + domainObject.getExternalId() + "</h2>", Label.CONTENT_XHTML), 0, 1, 5, 1);
 
         addChart();

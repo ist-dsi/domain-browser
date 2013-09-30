@@ -43,7 +43,11 @@ public class ConsistencyPredicateView extends GridLayout {
     public void attach() {
         super.attach();
 
-        addComponent(new DomainClassLink(metaClass), 0, 0, 5, 0);
+        HorizontalLayout classLayout = new HorizontalLayout();
+        classLayout.setSpacing(true);
+        classLayout.addComponent(new Label("from class"));
+        classLayout.addComponent(new DomainClassLink(metaClass));
+        addComponent(classLayout, 0, 0, 5, 0);
         addComponent(new Label("<h2>consistency predicate " + consistencyPredicate.getPredicate().getName() + "()</h2>",
                 Label.CONTENT_XHTML), 0, 1, 5, 1);
 
