@@ -156,27 +156,29 @@ public class DomainBrowser extends VerticalLayout implements EmbeddedComponentCo
             changeDomainView(new Label(NO_DOMAIN_META_OBJECTS_WARNING));
             return;
         }
+        DomainConsistencyPredicate predicate = getDomainPredicate(predicateFullName);
+        if (predicate != null) {
+            changeDomainView(new ConsistencyPredicateView(predicate));
+        }
+    }
+
+    private static DomainConsistencyPredicate getDomainPredicate(String predicateFullName) {
         try {
             String className = extractClassName(predicateFullName);
             String predicateName = extractMethodSimpleName(predicateFullName);
             Method predicateMethod = Class.forName(className).getDeclaredMethod(predicateName);
-            DomainConsistencyPredicate predicate = DomainConsistencyPredicate.readDomainConsistencyPredicate(predicateMethod);
-            if (predicate != null) {
-                changeDomainView(new ConsistencyPredicateView(predicate));
-            }
-        } catch (ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new RuntimeException(ex);
+            return DomainConsistencyPredicate.readDomainConsistencyPredicate(predicateMethod);
+        } catch (ClassNotFoundException | NoSuchMethodException ex) {
+            return null;
         }
     }
 
-    private String extractClassName(String methodFullName) {
+    private static String extractClassName(String methodFullName) {
         String methodSimpleName = extractMethodSimpleName(methodFullName);
         return methodFullName.substring(0, methodFullName.length() - methodSimpleName.length() - 3);
     }
 
-    private String extractMethodSimpleName(String methodFullName) {
+    private static String extractMethodSimpleName(String methodFullName) {
         String[] methodNameParts = methodFullName.split("\\.");
         String methodSimpleName = methodNameParts[methodNameParts.length - 1];
         //Removes the parenthesis

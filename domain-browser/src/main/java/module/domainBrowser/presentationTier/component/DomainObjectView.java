@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import module.domainBrowser.domain.DomainUtils;
+import module.domainBrowser.domain.DomainUtils.ConsistencyPredicateLink;
 import module.domainBrowser.domain.DomainUtils.DomainClassLink;
 import module.domainBrowser.domain.DomainUtils.DomainObjectLink;
 
@@ -273,11 +274,17 @@ public class DomainObjectView extends GridLayout {
 
         int iteration = 0;
         for (Method predicate : ConsistencyPredicateSystem.getPredicatesFor(domainObject)) {
-            Label predicateName =
-                    new Label(predicate.getDeclaringClass().getName() + ".<b>" + predicate.getName() + "()</b>",
-                            Label.CONTENT_XHTML);
-            addComponent(predicateName, 0, 7 + iteration * 2, 4, 7 + iteration * 2);
-            setComponentAlignment(predicateName, Alignment.BOTTOM_LEFT);
+            Component predicateComponent;
+            if (ConsistencyPredicatesConfig.canCreateDomainMetaObjects()) {
+                predicateComponent =
+                        new ConsistencyPredicateLink(DomainConsistencyPredicate.readDomainConsistencyPredicate(predicate));
+            } else {
+                predicateComponent =
+                        new Label(predicate.getDeclaringClass().getName() + ".<b>" + predicate.getName() + "()</b>",
+                                Label.CONTENT_XHTML);
+            }
+            addComponent(predicateComponent, 0, 7 + iteration * 2, 4, 7 + iteration * 2);
+            setComponentAlignment(predicateComponent, Alignment.BOTTOM_LEFT);
 
             Embedded predicateResult;
             try {
